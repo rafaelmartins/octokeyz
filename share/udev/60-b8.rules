@@ -1,0 +1,2 @@
+# rgm.io b8
+SUBSYSTEMS=="input", ATTRS{id/vendor}=="16c0", ATTRS{id/product}=="05df", ATTRS{name}=="rgm.io b8", TAG+="uaccess"

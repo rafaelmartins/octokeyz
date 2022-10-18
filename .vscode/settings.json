@@ -1,0 +1,6 @@
+{
+    "cmake.sourceDirectory": "${workspaceFolder}/firmware",
+    "gopls": {
+        "build.experimentalWorkspaceModule": true
+    }
+}
