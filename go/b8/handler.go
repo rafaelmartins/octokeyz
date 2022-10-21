@@ -20,6 +20,21 @@ func (h *handler) execute(ev *Event) {
 	if h.fn != nil && ev != nil && ev.Button == h.button {
 		switch ev.buttonState {
 		case buttonDown:
+			found := false
+			h.mtx.Lock()
+			for _, e := range h.events {
+				if ev.Button == e.Button {
+					found = true
+					break
+				}
+			}
+			h.mtx.Unlock()
+
+			// ignore "button down" event if there's some event queued waiting for "button up" yet
+			if found {
+				return
+			}
+
 			go func(ev Event) {
 				e := &ev
 				e.channel = make(chan time.Time, 1)
