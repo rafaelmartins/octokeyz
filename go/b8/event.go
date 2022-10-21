@@ -26,17 +26,21 @@ const (
 	BUTTON_8
 )
 
-type ButtonStateType uint8
+type buttonStateType uint8
 
 const (
-	BUTTON_UP ButtonStateType = iota
-	BUTTON_DOWN
+	buttonUp buttonStateType = iota
+	buttonDown
 )
 
 type Event struct {
-	Time        time.Time
-	Button      ButtonType
-	ButtonState ButtonStateType
+	Time   time.Time
+	Button ButtonType
+
+	buttonState buttonStateType
+	hold        time.Duration
+	channel     chan time.Time
+	done        bool
 }
 
 type kernelEvent struct {
@@ -75,9 +79,19 @@ func newEvents(r io.Reader) ([]*Event, error) {
 		rv = append(rv, &Event{
 			Time:        time.Unix(ev.time_.sec, ev.time_.usec),
 			Button:      ButtonType(int(ev.code) - btnMacro),
-			ButtonState: ButtonStateType(ev.value),
+			buttonState: buttonStateType(ev.value),
 		})
 	}
 
 	return rv, nil
+}
+
+func (e *Event) WaitForRelease() time.Duration {
+	if e.done {
+		return e.hold
+	}
+
+	c := <-e.channel
+	e.hold = c.Sub(e.Time)
+	return e.hold
 }

@@ -1,13 +1,16 @@
 package b8
 
 import (
-	"fmt"
+	"errors"
 	"os"
+	"sync"
 )
 
 type Device struct {
-	evdev    string
-	file     *os.File
+	evdev string
+	file  *os.File
+
+	mtx      sync.Mutex
 	handlers []*handler
 }
 
@@ -34,17 +37,19 @@ func (d *Device) Close() error {
 	return err
 }
 
-func (d *Device) AddHandler(button ButtonType, buttonState ButtonStateType, fn HandlerFunc) {
+func (d *Device) AddHandler(button ButtonType, fn HandlerFunc) {
+	d.mtx.Lock()
+	defer d.mtx.Unlock()
+
 	d.handlers = append(d.handlers, &handler{
-		fn:          fn,
-		button:      button,
-		buttonState: buttonState,
+		fn:     fn,
+		button: button,
 	})
 }
 
 func (d *Device) Listen() error {
 	if d.file == nil {
-		return fmt.Errorf("b8: char device is not open")
+		return errors.New("b8: char device is not open")
 	}
 
 	for {
@@ -55,7 +60,9 @@ func (d *Device) Listen() error {
 
 		for _, ev := range events {
 			for _, h := range d.handlers {
+				d.mtx.Lock()
 				h.execute(ev)
+				d.mtx.Unlock()
 			}
 		}
 	}
