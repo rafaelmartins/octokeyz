@@ -29,7 +29,7 @@ target_compile_options(b8 PRIVATE
 check_ipo_supported()
 set_property(TARGET b8 PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 
-avr_target_set_device(b8 attiny2313 20000000UL)
-avr_target_show_size(b8 attiny2313)
+avr_target_set_device(b8 attiny2313a 20000000UL)
+avr_target_show_size(b8 attiny2313a)
 avr_target_gen_map(b8)
 avr_target_generate_hex(b8)
