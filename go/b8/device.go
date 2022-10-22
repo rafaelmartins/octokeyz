@@ -3,15 +3,12 @@ package b8
 import (
 	"errors"
 	"os"
-	"sync"
 )
 
 type Device struct {
-	evdev string
-	file  *os.File
-
-	mtx      sync.Mutex
-	handlers []*handler
+	evdev   string
+	file    *os.File
+	buttons map[ButtonID]*Button
 }
 
 func (d *Device) Open() error {
@@ -24,6 +21,9 @@ func (d *Device) Open() error {
 		return err
 	}
 	d.file = f
+
+	d.buttons = newButtons()
+
 	return nil
 }
 
@@ -37,14 +37,8 @@ func (d *Device) Close() error {
 	return err
 }
 
-func (d *Device) AddHandler(button ButtonType, fn HandlerFunc) {
-	d.mtx.Lock()
-	defer d.mtx.Unlock()
-
-	d.handlers = append(d.handlers, &handler{
-		fn:     fn,
-		button: button,
-	})
+func (d *Device) AddHandler(button ButtonID, fn ButtonHandler) {
+	d.buttons[button].addHandler(fn)
 }
 
 func (d *Device) Listen() error {
@@ -59,10 +53,10 @@ func (d *Device) Listen() error {
 		}
 
 		for _, ev := range events {
-			for _, h := range d.handlers {
-				d.mtx.Lock()
-				h.execute(ev)
-				d.mtx.Unlock()
+			if ev.pressed {
+				d.buttons[ev.button].press(ev.etime)
+			} else {
+				d.buttons[ev.button].release(ev.etime)
 			}
 		}
 	}

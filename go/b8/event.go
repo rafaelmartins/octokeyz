@@ -8,39 +8,14 @@ import (
 )
 
 const (
-	evKey      = 1
-	btnMacro   = 0x290
-	numButtons = 8
+	evKey    = 1
+	btnMacro = 0x290
 )
 
-type ButtonType uint8
-
-const (
-	BUTTON_1 ButtonType = iota
-	BUTTON_2
-	BUTTON_3
-	BUTTON_4
-	BUTTON_5
-	BUTTON_6
-	BUTTON_7
-	BUTTON_8
-)
-
-type buttonStateType uint8
-
-const (
-	buttonUp buttonStateType = iota
-	buttonDown
-)
-
-type Event struct {
-	Time   time.Time
-	Button ButtonType
-
-	buttonState buttonStateType
-	hold        time.Duration
-	channel     chan time.Time
-	done        bool
+type event struct {
+	etime   time.Time
+	button  ButtonID
+	pressed bool
 }
 
 type kernelEvent struct {
@@ -57,7 +32,7 @@ const (
 	kernelEventSize = int(unsafe.Sizeof(kernelEvent{}))
 )
 
-func newEvents(r io.Reader) ([]*Event, error) {
+func newEvents(r io.Reader) ([]*event, error) {
 	buf := make([]byte, 64*kernelEventSize)
 	n, err := r.Read(buf)
 	if err != nil {
@@ -67,7 +42,7 @@ func newEvents(r io.Reader) ([]*Event, error) {
 		return nil, fmt.Errorf("b8: failed to read from evdev")
 	}
 
-	rv := []*Event{}
+	rv := []*event{}
 
 	for i := 0; i < n/kernelEventSize; i++ {
 		ev := *(*kernelEvent)(unsafe.Pointer(&buf[i*kernelEventSize]))
@@ -76,22 +51,12 @@ func newEvents(r io.Reader) ([]*Event, error) {
 			continue
 		}
 
-		rv = append(rv, &Event{
-			Time:        time.Unix(ev.time_.sec, ev.time_.usec),
-			Button:      ButtonType(int(ev.code) - btnMacro),
-			buttonState: buttonStateType(ev.value),
+		rv = append(rv, &event{
+			etime:   time.Unix(ev.time_.sec, ev.time_.usec*1000),
+			button:  ButtonID(int(ev.code) - btnMacro),
+			pressed: ev.value > 0,
 		})
 	}
 
 	return rv, nil
-}
-
-func (e *Event) WaitForRelease() time.Duration {
-	if e.done {
-		return e.hold
-	}
-
-	c := <-e.channel
-	e.hold = c.Sub(e.Time)
-	return e.hold
 }
