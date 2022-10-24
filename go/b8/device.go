@@ -89,10 +89,12 @@ func (d *Device) Listen() error {
 		}
 
 		for _, ev := range events {
-			if ev.IsPressed() {
-				d.buttons[ButtonID(ev.Key()-btnMacro)].press(ev.Time())
-			} else {
-				d.buttons[ButtonID(ev.Key()-btnMacro)].release(ev.Time())
+			if btn, ok := d.buttons[ButtonID(ev.Key()-btnMacro)]; ok {
+				if ev.IsPressed() {
+					btn.press(ev.Time())
+				} else {
+					btn.release(ev.Time())
+				}
 			}
 		}
 	}
