@@ -2,61 +2,97 @@ package b8
 
 import (
 	"errors"
-	"os"
+
+	"github.com/rafaelmartins/b8/go/b8/internal/usb"
+)
+
+const (
+	btnMacro = 0x290
 )
 
 type Device struct {
-	evdev   string
-	file    *os.File
+	dev     *usb.Device
 	buttons map[ButtonID]*Button
 }
 
-func (d *Device) Open() error {
-	if d.file != nil {
-		return nil
+func ListDevices() ([]*Device, error) {
+	devices, err := usb.ListDevices(func(d *usb.Device) bool {
+		if d.VendorId() != USBVendorId {
+			return false
+		}
+
+		if d.ProductId() != USBProductId {
+			return false
+		}
+
+		if d.Manufacturer() != USBManufacturer {
+			return false
+		}
+
+		if d.Product() != USBProduct {
+			return false
+		}
+
+		return true
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	f, err := os.Open(d.evdev)
-	if err != nil {
+	rv := []*Device{}
+	for _, dev := range devices {
+		rv = append(rv, &Device{
+			dev: dev,
+		})
+	}
+	return rv, nil
+}
+
+func (d *Device) Open() error {
+	if d.dev == nil {
+		return errors.New("b8: device not defined")
+	}
+
+	if err := d.dev.Open(); err != nil {
 		return err
 	}
-	d.file = f
 
 	d.buttons = newButtons()
-
 	return nil
 }
 
 func (d *Device) Close() error {
-	if d.file == nil {
+	if d.dev == nil {
 		return nil
 	}
 
-	err := d.file.Close()
-	d.file = nil
-	return err
+	return d.dev.Close()
 }
 
 func (d *Device) AddHandler(button ButtonID, fn ButtonHandler) {
-	d.buttons[button].addHandler(fn)
+	if d.buttons != nil {
+		if btn, ok := d.buttons[button]; ok {
+			btn.addHandler(fn)
+		}
+	}
 }
 
 func (d *Device) Listen() error {
-	if d.file == nil {
-		return errors.New("b8: char device is not open")
+	if d.dev == nil || !d.dev.IsOpen() {
+		return errors.New("b8: device is not open")
 	}
 
 	for {
-		events, err := newEvents(d.file)
+		events, err := d.dev.Read()
 		if err != nil {
 			return err
 		}
 
 		for _, ev := range events {
-			if ev.pressed {
-				d.buttons[ev.button].press(ev.etime)
+			if ev.IsPressed() {
+				d.buttons[ButtonID(ev.Key()-btnMacro)].press(ev.Time())
 			} else {
-				d.buttons[ev.button].release(ev.etime)
+				d.buttons[ButtonID(ev.Key()-btnMacro)].release(ev.Time())
 			}
 		}
 	}
