@@ -53,12 +53,7 @@ func (d *Device) Open() error {
 		return errors.New("b8: device not defined")
 	}
 
-	if err := d.dev.Open(); err != nil {
-		return err
-	}
-
-	d.buttons = newButtons()
-	return nil
+	return d.dev.Open()
 }
 
 func (d *Device) Close() error {
@@ -70,10 +65,12 @@ func (d *Device) Close() error {
 }
 
 func (d *Device) AddHandler(button ButtonID, fn ButtonHandler) {
-	if d.buttons != nil {
-		if btn, ok := d.buttons[button]; ok {
-			btn.addHandler(fn)
-		}
+	if d.buttons == nil {
+		d.buttons = newButtons()
+	}
+
+	if btn, ok := d.buttons[button]; ok {
+		btn.addHandler(fn)
 	}
 }
 
