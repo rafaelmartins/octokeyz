@@ -17,17 +17,24 @@ const (
 	buttonNAryUsagePage = 0x09 // Button
 	buttonNAryUsageMin  = 0x01 // Button 1
 	buttonNAryUsageMax  = 0x08 // Button 8
+	ledAppUsage         = 0x4b // Generic Indicator
+	ledAppUsagePage     = 0x08 // LED
 )
 
 const (
 	buttonReportId  = 0
 	buttonReportLen = 2
 	buttonCaps      = 1
+	ledReportId     = 0
+	ledReportLen    = 2
+	ledCaps         = 1
 )
 
 const (
-	evKey       = 1
-	buttonMacro = 0x290
+	evKey    = 1
+	evLed    = 17
+	btnMacro = 0x0290
+	ledMisc  = 0x08
 )
 
 const (
@@ -53,7 +60,8 @@ const (
 )
 
 const (
-	hHidP_Input = 0
+	hHidP_Input  = 0
+	hHidP_Output = 1
 )
 
 const (
@@ -176,11 +184,12 @@ type hHIDP_BUTTON_CAPS struct {
 }
 
 type platformContext struct {
-	path       *uint16
-	handle     syscall.Handle
-	caps       hHIDP_CAPS
-	buttonCaps hHIDP_BUTTON_CAPS
-	data       uint8
+	path        *uint16
+	handle      syscall.Handle
+	caps        hHIDP_CAPS
+	iButtonCaps hHIDP_BUTTON_CAPS
+	oButtonCaps hHIDP_BUTTON_CAPS
+	data        uint8
 }
 
 func listDevices() ([]*Device, error) {
@@ -338,8 +347,20 @@ func (d *Device) Open() error {
 		d.Close()
 		return fmt.Errorf("usb: device reported wrong number of input data indices: %d", d.pctx.caps.numberInputDataIndices)
 	}
+	if d.pctx.caps.outputReportByteLength != ledReportLen {
+		d.Close()
+		return fmt.Errorf("usb: device reported wrong output report byte length: %d", d.pctx.caps.outputReportByteLength)
+	}
+	if d.pctx.caps.numberOutputButtonCaps != ledCaps {
+		d.Close()
+		return fmt.Errorf("usb: device reported wrong number of led capabilities: %d", d.pctx.caps.numberOutputButtonCaps)
+	}
+	if d.pctx.caps.numberOutputDataIndices != 1 {
+		d.Close()
+		return fmt.Errorf("usb: device reported wrong number of output data indices: %d", d.pctx.caps.numberOutputDataIndices)
+	}
 
-	status, _, err = hidP_GetButtonCaps.Call(uintptr(hHidP_Input), uintptr(unsafe.Pointer(&d.pctx.buttonCaps)), uintptr(unsafe.Pointer(&d.pctx.caps.numberInputButtonCaps)), preparsed)
+	status, _, err = hidP_GetButtonCaps.Call(uintptr(hHidP_Input), uintptr(unsafe.Pointer(&d.pctx.iButtonCaps)), uintptr(unsafe.Pointer(&d.pctx.caps.numberInputButtonCaps)), preparsed)
 	if err.(syscall.Errno) != 0 {
 		d.Close()
 		return err
@@ -349,33 +370,72 @@ func (d *Device) Open() error {
 		return fmt.Errorf("usb: NTSTATUS = %s", hHIDP_STATUS[status])
 	}
 
-	if d.pctx.buttonCaps.usagePage != buttonNAryUsagePage {
+	if d.pctx.iButtonCaps.usagePage != buttonNAryUsagePage {
 		d.Close()
-		return fmt.Errorf("usb: device reported wrong button usage: %d", d.pctx.buttonCaps.usagePage)
+		return fmt.Errorf("usb: device reported wrong button usage: %d", d.pctx.iButtonCaps.usagePage)
 	}
-	if d.pctx.buttonCaps.reportID != buttonReportId {
+	if d.pctx.iButtonCaps.reportID != buttonReportId {
 		d.Close()
-		return fmt.Errorf("usb: device reported wrong button report id: %d", d.pctx.buttonCaps.reportID)
+		return fmt.Errorf("usb: device reported wrong button report id: %d", d.pctx.iButtonCaps.reportID)
 	}
-	if d.pctx.buttonCaps.linkUsage != buttonAppUsage {
+	if d.pctx.iButtonCaps.linkUsage != buttonAppUsage {
 		d.Close()
-		return fmt.Errorf("usb: device reported wrong button application usage: %d", d.pctx.buttonCaps.linkUsage)
+		return fmt.Errorf("usb: device reported wrong button application usage: %d", d.pctx.iButtonCaps.linkUsage)
 	}
-	if d.pctx.buttonCaps.linkUsagePage != rootUsagePage {
+	if d.pctx.iButtonCaps.linkUsagePage != rootUsagePage {
 		d.Close()
-		return fmt.Errorf("usb: device reported wrong usage: %d", d.pctx.buttonCaps.linkUsagePage)
+		return fmt.Errorf("usb: device reported wrong usage: %d", d.pctx.iButtonCaps.linkUsagePage)
 	}
-	if !d.pctx.buttonCaps.isRange {
+	if !d.pctx.iButtonCaps.isRange {
 		d.Close()
-		return errors.New("usb: device reported that usages are not organized in range")
+		return errors.New("usb: device reported that input usages are not organized in range")
 	}
-	if d.pctx.buttonCaps.rangeUsageMin != buttonNAryUsageMin {
+	if d.pctx.iButtonCaps.rangeUsageMin != buttonNAryUsageMin {
 		d.Close()
-		return fmt.Errorf("usb: device reported wrong button usage minimum: %d", d.pctx.buttonCaps.rangeUsageMin)
+		return fmt.Errorf("usb: device reported wrong button usage minimum: %d", d.pctx.iButtonCaps.rangeUsageMin)
 	}
-	if d.pctx.buttonCaps.rangeUsageMax != buttonNAryUsageMax {
+	if d.pctx.iButtonCaps.rangeUsageMax != buttonNAryUsageMax {
 		d.Close()
-		return fmt.Errorf("usb: device reported wrong button usage maximum: %d", d.pctx.buttonCaps.rangeUsageMax)
+		return fmt.Errorf("usb: device reported wrong button usage maximum: %d", d.pctx.iButtonCaps.rangeUsageMax)
+	}
+
+	status, _, err = hidP_GetButtonCaps.Call(uintptr(hHidP_Output), uintptr(unsafe.Pointer(&d.pctx.oButtonCaps)), uintptr(unsafe.Pointer(&d.pctx.caps.numberOutputButtonCaps)), preparsed)
+	if err.(syscall.Errno) != 0 {
+		d.Close()
+		return err
+	}
+	if status != hHIDP_STATUS_SUCCESS {
+		d.Close()
+		return fmt.Errorf("usb: NTSTATUS = %s", hHIDP_STATUS[status])
+	}
+
+	if d.pctx.oButtonCaps.usagePage != ledAppUsagePage {
+		d.Close()
+		return fmt.Errorf("usb: device reported wrong led usage: %d", d.pctx.oButtonCaps.usagePage)
+	}
+	if d.pctx.oButtonCaps.reportID != ledReportId {
+		d.Close()
+		return fmt.Errorf("usb: device reported wrong led report id: %d", d.pctx.oButtonCaps.reportID)
+	}
+	if d.pctx.oButtonCaps.linkUsage != rootUsage {
+		d.Close()
+		return fmt.Errorf("usb: device reported wrong led application usage: %d", d.pctx.oButtonCaps.linkUsage)
+	}
+	if d.pctx.oButtonCaps.linkUsagePage != rootUsagePage {
+		d.Close()
+		return fmt.Errorf("usb: device reported wrong usage: %d", d.pctx.oButtonCaps.linkUsagePage)
+	}
+	if d.pctx.oButtonCaps.isRange {
+		d.Close()
+		return errors.New("usb: device reported that output usages are organized in range")
+	}
+	if d.pctx.oButtonCaps.rangeUsageMin != ledAppUsage {
+		d.Close()
+		return fmt.Errorf("usb: device reported wrong led usage minimum: %d", d.pctx.oButtonCaps.rangeUsageMin)
+	}
+	if d.pctx.oButtonCaps.rangeUsageMax != ledAppUsage {
+		d.Close()
+		return fmt.Errorf("usb: device reported wrong led usage maximum: %d", d.pctx.oButtonCaps.rangeUsageMax)
 	}
 
 	return nil
@@ -422,12 +482,12 @@ func (d *Device) Read() ([]*Event, error) {
 		}
 
 		t := time.Now()
-		for j := d.pctx.buttonCaps.rangeDataIndexMin; j <= d.pctx.buttonCaps.rangeDataIndexMax; j++ {
+		for j := d.pctx.iButtonCaps.rangeDataIndexMin; j <= d.pctx.iButtonCaps.rangeDataIndexMax; j++ {
 			if (d.pctx.data & (1 << j)) != (buf[i+1] & (1 << j)) {
 				rv = append(rv, &Event{
 					Time:  t,
 					Type:  evKey,
-					Code:  buttonMacro + j,
+					Code:  btnMacro + j,
 					Value: int32(buf[i+1] & (1 << j)),
 				})
 			}
@@ -436,4 +496,37 @@ func (d *Device) Read() ([]*Event, error) {
 	}
 
 	return rv, nil
+}
+
+func (d *Device) Write(e *Event) error {
+	if !d.open {
+		return errors.New("usb: device is not open")
+	}
+
+	if e.Type != evLed {
+		return errors.New("usb: unsupported event type")
+	}
+
+	if e.Code != ledMisc {
+		return errors.New("usb: unsupported led type")
+	}
+
+	v := 0
+	if e.Value > 0 {
+		v = (1 << d.pctx.oButtonCaps.rangeDataIndexMax)
+	}
+
+	buf := make([]byte, ledReportLen)
+	buf[0] = ledReportId
+	buf[1] = byte(v)
+
+	n := uint32(0)
+	if err := syscall.WriteFile(d.pctx.handle, buf, &n, nil); err != nil {
+		return err
+	}
+	if int(n) != len(buf) {
+		return errors.New("usb: failed to write hid report")
+	}
+
+	return nil
 }

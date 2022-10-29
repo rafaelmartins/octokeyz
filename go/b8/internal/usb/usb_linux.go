@@ -109,7 +109,7 @@ func (d *Device) Open() error {
 		return errors.New("usb: device is open")
 	}
 
-	f, err := os.Open(d.path)
+	f, err := os.OpenFile(d.path, os.O_RDWR, 0755)
 	if err != nil {
 		return err
 	}
@@ -162,4 +162,28 @@ func (d *Device) Read() ([]*Event, error) {
 	}
 
 	return rv, nil
+}
+
+func (d *Device) Write(e *Event) error {
+	if !d.open {
+		return errors.New("usb: device is not open")
+	}
+
+	buf := make([]byte, kernelEventSize)
+	ev := (*kernelEvent)(unsafe.Pointer(&buf[0]))
+	ev.time_.sec = e.Time.Unix()
+	ev.time_.usec = e.Time.UnixMicro() % 1000000
+	ev.type_ = e.Type
+	ev.code = e.Code
+	ev.value = e.Value
+
+	n, err := d.pctx.file.Write(buf)
+	if err != nil {
+		return err
+	}
+	if n != len(buf) {
+		return errors.New("usb: failed to write event")
+	}
+
+	return nil
 }

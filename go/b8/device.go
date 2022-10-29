@@ -2,13 +2,16 @@ package b8
 
 import (
 	"errors"
+	"time"
 
 	"github.com/rafaelmartins/b8/go/b8/internal/usb"
 )
 
 const (
 	evKey    = 1
-	btnMacro = 0x290
+	evLed    = 17
+	btnMacro = 0x0290
+	ledMisc  = 0x08
 )
 
 type Device struct {
@@ -100,4 +103,25 @@ func (d *Device) Listen() error {
 			}
 		}
 	}
+}
+
+func (d *Device) led(v int32) error {
+	if d.dev == nil || !d.dev.IsOpen() {
+		return errors.New("b8: device is not open")
+	}
+
+	return d.dev.Write(&usb.Event{
+		Time:  time.Now(),
+		Type:  evLed,
+		Code:  ledMisc,
+		Value: v,
+	})
+}
+
+func (d *Device) LedOn() error {
+	return d.led(1)
+}
+
+func (d *Device) LedOff() error {
+	return d.led(0)
 }
