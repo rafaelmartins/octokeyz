@@ -11,7 +11,6 @@ import (
 )
 
 const (
-	evKey           = 1
 	kernelEventSize = int(unsafe.Sizeof(kernelEvent{}))
 )
 
@@ -153,16 +152,12 @@ func (d *Device) Read() ([]*Event, error) {
 	rv := []*Event{}
 
 	for i := 0; i < n/kernelEventSize; i++ {
-		ev := *(*kernelEvent)(unsafe.Pointer(&buf[i*kernelEventSize]))
-
-		if ev.type_ != evKey {
-			continue
-		}
-
+		ev := (*kernelEvent)(unsafe.Pointer(&buf[i*kernelEventSize]))
 		rv = append(rv, &Event{
-			key:     ev.code,
-			time:    time.Unix(ev.time_.sec, ev.time_.usec*1000),
-			pressed: ev.value > 0,
+			Time:  time.Unix(ev.time_.sec, ev.time_.usec*1000),
+			Type:  ev.type_,
+			Code:  ev.code,
+			Value: ev.value,
 		})
 	}
 

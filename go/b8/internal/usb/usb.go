@@ -63,19 +63,8 @@ func (d *Device) SerialNumber() string {
 }
 
 type Event struct {
-	key     uint16
-	time    time.Time
-	pressed bool
-}
-
-func (e *Event) Key() uint16 {
-	return e.key
-}
-
-func (e *Event) Time() time.Time {
-	return e.time
-}
-
-func (e *Event) IsPressed() bool {
-	return e.pressed
+	Time  time.Time
+	Type  uint16
+	Code  uint16
+	Value int32
 }

@@ -26,6 +26,7 @@ const (
 )
 
 const (
+	evKey       = 1
 	buttonMacro = 0x290
 )
 
@@ -424,9 +425,10 @@ func (d *Device) Read() ([]*Event, error) {
 		for j := d.pctx.buttonCaps.rangeDataIndexMin; j <= d.pctx.buttonCaps.rangeDataIndexMax; j++ {
 			if (d.pctx.data & (1 << j)) != (buf[i+1] & (1 << j)) {
 				rv = append(rv, &Event{
-					key:     buttonMacro + j,
-					time:    t,
-					pressed: (buf[i+1] & (1 << j)) > 0,
+					Time:  t,
+					Type:  evKey,
+					Code:  buttonMacro + j,
+					Value: int32(buf[i+1] & (1 << j)),
 				})
 			}
 		}

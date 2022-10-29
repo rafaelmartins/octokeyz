@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	evKey    = 1
 	btnMacro = 0x290
 )
 
@@ -86,11 +87,15 @@ func (d *Device) Listen() error {
 		}
 
 		for _, ev := range events {
-			if btn, ok := d.buttons[ButtonID(ev.Key()-btnMacro)]; ok {
-				if ev.IsPressed() {
-					btn.press(ev.Time())
+			if ev.Type != evKey {
+				continue
+			}
+
+			if btn, ok := d.buttons[ButtonID(ev.Code-btnMacro)]; ok {
+				if ev.Value > 0 {
+					btn.press(ev.Time)
 				} else {
-					btn.release(ev.Time())
+					btn.release(ev.Time)
 				}
 			}
 		}
