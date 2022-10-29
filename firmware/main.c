@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: GPL-2.0
  */
 
+#include <stdbool.h>
 #include <avr/io.h>
 #include <avr/wdt.h>
 #include <avr/interrupt.h>
@@ -27,21 +28,52 @@ const char usbHidReportDescriptor[] PROGMEM = {
     0x75, 0x01,  //         ReportSize(1)
     0x81, 0x02,  //         Input(Data, Variable, Absolute, NoWrap, Linear, PreferredState, NoNullPosition, BitField)
     0xC0,        //     EndCollection()
+    0x05, 0x08,  //     UsagePage(LED[8])
+    0x09, 0x4B,  //     UsageId(Generic Indicator[75])
+    0x15, 0x00,  //     LogicalMinimum(0)
+    0x25, 0x01,  //     LogicalMaximum(1)
+    0x95, 0x01,  //     ReportCount(1)
+    0x75, 0x01,  //     ReportSize(1)
+    0x91, 0x02,  //     Output(Data, Variable, Absolute, NoWrap, Linear, PreferredState, NoNullPosition, NonVolatile, BitField)
+    0x75, 0x07,  //     ReportSize(7)
+    0x91, 0x03,  //     Output(Constant, Variable, Absolute, NoWrap, Linear, PreferredState, NoNullPosition, NonVolatile, BitField)
     0xC0,        // EndCollection()
 };
 
 static volatile uint8_t report;
+static volatile bool read_report = false;
 
 
 usbMsgLen_t
 usbFunctionSetup(uchar data[8])
 {
     usbRequest_t *rq = (void *) data;
-    if ((rq->bmRequestType & USBRQ_TYPE_MASK) == USBRQ_TYPE_CLASS && rq->bRequest == USBRQ_HID_GET_REPORT) {
-        usbMsgPtr = (void *) &report;
-        return sizeof(report);
+    if ((rq->bmRequestType & USBRQ_TYPE_MASK) == USBRQ_TYPE_CLASS) {
+        switch (rq->bRequest) {
+        case USBRQ_HID_GET_REPORT:
+            usbMsgPtr = (void *) &report;
+            return sizeof(report);
+
+        case USBRQ_HID_SET_REPORT:
+            read_report = true;
+            return USB_NO_MSG;
+        }
     }
     return 0;
+}
+
+
+uchar
+usbFunctionWrite(uchar *data, uchar len)
+{
+    if (read_report && len == 1) {
+        if (data[0] & (1 << 0))
+            PORTD |= (1 << 6);
+        else
+            PORTD &= ~(1 << 6);
+    }
+    read_report = false;
+    return 1;
 }
 
 
@@ -49,6 +81,7 @@ int
 main(void)
 {
     PORTB = 0xff;
+    DDRD = (1 << 6);
 
     wdt_enable(WDTO_1S);
 
