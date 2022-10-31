@@ -50,6 +50,10 @@ func (b *Button) String() string {
 }
 
 func (b *Button) addHandler(h ButtonHandler) {
+	if h == nil {
+		return
+	}
+
 	b.mtx.Lock()
 	b.handlers = append(b.handlers, h)
 	b.mtx.Unlock()
@@ -111,4 +115,19 @@ func (b *Button) WaitForRelease() time.Duration {
 	}
 
 	return <-b.channel
+}
+
+func ModifierHandler(v *bool) ButtonHandler {
+	if v == nil {
+		return nil
+	}
+
+	*v = false
+
+	return func(b *Button) error {
+		*v = true
+		b.WaitForRelease()
+		*v = false
+		return nil
+	}
 }

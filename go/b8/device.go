@@ -69,6 +69,10 @@ func (d *Device) Close() error {
 }
 
 func (d *Device) AddHandler(button ButtonID, fn ButtonHandler) {
+	if fn == nil {
+		return
+	}
+
 	if d.buttons == nil {
 		d.buttons = newButtons()
 	}
