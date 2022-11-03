@@ -6,17 +6,20 @@
  */
 
 #include <stdbool.h>
+#include <avr/eeprom.h>
 #include <avr/io.h>
 #include <avr/wdt.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
 #include "usbdrv/usbdrv.h"
+#include "bits.h"
 
 const char usbHidReportDescriptor[] PROGMEM = {
     0x05, 0x0C,  // UsagePage(Consumer[12])
     0x09, 0x01,  // UsageId(Consumer Control[1])
     0xA1, 0x01,  // Collection(Application)
+    0x85, 0x01,  //     ReportId(1)
     0x09, 0x03,  //     UsageId(Programmable Buttons[3])
     0xA1, 0x04,  //     Collection(NamedArray)
     0x05, 0x09,  //         UsagePage(Button[9])
@@ -29,19 +32,28 @@ const char usbHidReportDescriptor[] PROGMEM = {
     0x81, 0x02,  //         Input(Data, Variable, Absolute, NoWrap, Linear, PreferredState, NoNullPosition, BitField)
     0xC0,        //     EndCollection()
     0x05, 0x08,  //     UsagePage(LED[8])
-    0x09, 0x4B,  //     UsageId(Generic Indicator[75])
-    0x15, 0x00,  //     LogicalMinimum(0)
-    0x25, 0x01,  //     LogicalMaximum(1)
-    0x95, 0x01,  //     ReportCount(1)
-    0x75, 0x01,  //     ReportSize(1)
-    0x91, 0x02,  //     Output(Data, Variable, Absolute, NoWrap, Linear, PreferredState, NoNullPosition, NonVolatile, BitField)
-    0x75, 0x07,  //     ReportSize(7)
+    0x09, 0x3C,  //     UsageId(Usage Multi Mode Indicator[60])
+    0xA1, 0x02,  //     Collection(Logical)
+    0x19, 0x3D,  //         UsageIdMin(Indicator On[61])
+    0x29, 0x41,  //         UsageIdMax(Indicator Off[65])
+    0x25, 0x05,  //         LogicalMaximum(5)
+    0x95, 0x01,  //         ReportCount(1)
+    0x75, 0x03,  //         ReportSize(3)
+    0x91, 0x00,  //         Output(Data, Array, Absolute, NoWrap, Linear, PreferredState, NoNullPosition, NonVolatile, BitField)
+    0xC0,        //     EndCollection()
+    0x75, 0x05,  //     ReportSize(5)
     0x91, 0x03,  //     Output(Constant, Variable, Absolute, NoWrap, Linear, PreferredState, NoNullPosition, NonVolatile, BitField)
     0xC0,        // EndCollection()
 };
 
-static volatile uint8_t report;
-static volatile bool read_report = false;
+static volatile uint8_t report[2] = {1};
+static volatile enum {
+    LED_ON,
+    LED_FLASH,
+    LED_SLOW_BLINK,
+    LED_FAST_BLINK,
+    LED_OFF,
+} led_state = LED_OFF;
 
 
 usbMsgLen_t
@@ -51,11 +63,11 @@ usbFunctionSetup(uchar data[8])
     if ((rq->bmRequestType & USBRQ_TYPE_MASK) == USBRQ_TYPE_CLASS) {
         switch (rq->bRequest) {
         case USBRQ_HID_GET_REPORT:
-            usbMsgPtr = (void *) &report;
+            report[1] = ~PINB;
+            usbMsgPtr = (void *) report;
             return sizeof(report);
 
         case USBRQ_HID_SET_REPORT:
-            read_report = true;
             return USB_NO_MSG;
         }
     }
@@ -63,16 +75,63 @@ usbFunctionSetup(uchar data[8])
 }
 
 
+ISR(TIMER1_COMPA_vect)
+{
+    switch (led_state) {
+    case LED_FLASH:
+        led_state = LED_OFF;
+        PORT_CLEAR(P_LED);
+        TCCR1B = 0;
+        break;
+
+    case LED_SLOW_BLINK:
+    case LED_FAST_BLINK:
+        PORT_FLIP(P_LED);
+        break;
+
+    case LED_OFF:
+    case LED_ON:
+        break;
+    }
+}
+
+
 uchar
 usbFunctionWrite(uchar *data, uchar len)
 {
-    if (read_report && len == 1) {
-        if (data[0] & (1 << 0))
-            PORTD |= (1 << 6);
-        else
-            PORTD &= ~(1 << 6);
+    if (len == 2 && data[0] == 1) {
+        led_state = data[1] & 0b11111;
+
+        TCCR1B = 0;
+        TCNT1 = 0;
+        OCR1A = 0;
+
+        switch (led_state) {
+        case LED_OFF:
+            PORT_CLEAR(P_LED);
+            break;
+
+        case LED_SLOW_BLINK:
+            OCR1A += 2928;  // ~150ms @ F_CPU/1024
+            // fallthrough
+
+        case LED_FAST_BLINK:
+            OCR1A += 976;   // ~50ms @ F_CPU/1024
+            // fallthrough
+
+        case LED_FLASH:
+            OCR1A += 976;   // ~50ms @ F_CPU/1024
+            TCCR1B = (1 << WGM12) | (1 << CS12) | (1 << CS10);
+            // fallthrough
+
+        case LED_ON:
+            PORT_SET(P_LED);
+            break;
+
+        default:
+            break;
+        }
     }
-    read_report = false;
     return 1;
 }
 
@@ -81,7 +140,11 @@ int
 main(void)
 {
     PORTB = 0xff;
-    DDRD = (1 << 6);
+    DDR_SET(P_LED);
+    PORT_SET(P_LED);
+
+    TCCR1A = 0;
+    TIMSK = (1 << OCIE1A);
 
     wdt_enable(WDTO_1S);
 
@@ -104,8 +167,8 @@ main(void)
         usbPoll();
 
         if (usbInterruptIsReady()) {
-            report = ~PINB;
-            usbSetInterrupt((void*) &report, sizeof(report));
+            report[1] = ~PINB;
+            usbSetInterrupt((void*) report, sizeof(report));
         }
     }
 

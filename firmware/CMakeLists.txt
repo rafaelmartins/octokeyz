@@ -10,6 +10,7 @@ project(b8 C ASM)
 
 add_executable(b8
     main.c
+    bits.h
     usbconfig.h
     usbdrv/usbdrv.c
     usbdrv/usbdrv.h

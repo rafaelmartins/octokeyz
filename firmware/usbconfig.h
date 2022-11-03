@@ -10,6 +10,8 @@
 #ifndef __usbconfig_h_included__
 #define __usbconfig_h_included__
 
+#include "bits.h"
+
 /*
 General Description:
 This file is an example configuration (with inline documentation) for the USB
@@ -162,12 +164,16 @@ section at the end of this file).
  * proceed, do a return after doing your things. One possible application
  * (besides debugging) is to flash a status LED on each packet.
  */
-/* #define USB_RESET_HOOK(resetStarts)     if(!resetStarts){hadUsbReset();} */
+#define USB_RESET_HOOK(resetStarts) \
+    if (!resetStarts) { \
+        PORT_SET(P_LED);; \
+    }
 /* This macro is a hook if you need to know when an USB RESET occurs. It has
  * one parameter which distinguishes between the start of RESET state and its
  * end.
  */
-/* #define USB_SET_ADDRESS_HOOK()              hadAddressAssigned(); */
+#define USB_SET_ADDRESS_HOOK() \
+    PORT_CLEAR(P_LED);
 /* This macro (if defined) is executed when a USB SET_ADDRESS request was
  * received.
  */
@@ -279,7 +285,7 @@ section at the end of this file).
  * HID class is 3, no subclass and protocol required (but may be useful!)
  * CDC class is 2, use subclass 2 and protocol 1 for ACM
  */
-#define USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH    46
+#define USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH    53
 /* Define this to the length of the HID report descriptor, if you implement
  * an HID device. Otherwise don't define it or define it to 0.
  * If you use this define, you must add a PROGMEM character array named
