@@ -2,25 +2,26 @@ package b8
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
-	"github.com/rafaelmartins/b8/go/b8/internal/usb"
+	"github.com/rafaelmartins/b8/go/b8/internal/usbhid"
 )
 
 const (
-	evKey    = 1
-	evLed    = 17
-	btnMacro = 0x0290
-	ledMisc  = 0x08
+	inputReportLen  = 2
+	outputReportLen = 2
+	reportID        = 1
 )
 
 type Device struct {
-	dev     *usb.Device
+	dev     *usbhid.Device
 	buttons map[ButtonID]*Button
+	data    byte
 }
 
 func ListDevices() ([]*Device, error) {
-	devices, err := usb.ListDevices(func(d *usb.Device) bool {
+	devices, err := usbhid.ListDevices(func(d *usbhid.Device) bool {
 		if d.VendorId() != USBVendorId {
 			return false
 		}
@@ -45,6 +46,10 @@ func ListDevices() ([]*Device, error) {
 
 	rv := []*Device{}
 	for _, dev := range devices {
+		if (dev.Version() >> 8) != (USBVersion >> 8) {
+			return nil, fmt.Errorf("b8: device version is not compatible, please upgrade: %s: 0x%04x", dev.Path(), dev.Version())
+		}
+
 		rv = append(rv, &Device{
 			dev: dev,
 		})
@@ -87,45 +92,42 @@ func (d *Device) Listen() error {
 		return errors.New("b8: device is not open")
 	}
 
+	buf := make([]byte, inputReportLen*64)
+
 	for {
-		events, err := d.dev.Read()
+		n, err := d.dev.Read(buf)
 		if err != nil {
 			return err
 		}
 
-		for _, ev := range events {
-			if ev.Type != evKey {
+		if n%inputReportLen != 0 {
+			return errors.New("b8: failed to read hid report")
+		}
+
+		t := time.Now()
+
+		for i := 0; i < int(n); i += inputReportLen {
+			if buf[i] != reportID || buf[i+1] == d.data {
 				continue
 			}
 
-			if btn, ok := d.buttons[ButtonID(ev.Code-btnMacro)]; ok {
-				if ev.Value > 0 {
-					btn.press(ev.Time)
-				} else {
-					btn.release(ev.Time)
+			for j := 0; j < 8; j++ {
+				if v := buf[i+1] & (1 << j); v != (d.data & (1 << j)) {
+					if btn, ok := d.buttons[ButtonID(j)]; ok {
+						if v > 0 {
+							btn.press(t)
+						} else {
+							btn.release(t)
+						}
+					}
 				}
 			}
+
+			d.data = buf[i+1]
 		}
 	}
 }
 
-func (d *Device) led(v int32) error {
-	if d.dev == nil || !d.dev.IsOpen() {
-		return errors.New("b8: device is not open")
-	}
-
-	return d.dev.Write(&usb.Event{
-		Time:  time.Now(),
-		Type:  evLed,
-		Code:  ledMisc,
-		Value: v,
-	})
-}
-
-func (d *Device) LedOn() error {
-	return d.led(1)
-}
-
-func (d *Device) LedOff() error {
-	return d.led(0)
+func (d *Device) Led(state LedState) error {
+	return led(d, state)
 }
