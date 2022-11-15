@@ -39,7 +39,7 @@ func ListDevices(f DeviceFilterFunc) ([]*Device, error) {
 
 func (d *Device) Open() error {
 	if d.file != nil {
-		return errors.New("usb: device is open")
+		return errors.New("usbhid: device is open")
 	}
 
 	f, err := os.OpenFile(d.path, os.O_RDWR, 0755)
@@ -72,7 +72,7 @@ func (d *Device) Close() error {
 
 func (d *Device) Read(buf []byte) (int, error) {
 	if d.file == nil {
-		return 0, errors.New("usb: device is not open")
+		return 0, errors.New("usbhid: device is not open")
 	}
 
 	return d.file.Read(buf)
@@ -80,7 +80,7 @@ func (d *Device) Read(buf []byte) (int, error) {
 
 func (d *Device) Write(buf []byte) (int, error) {
 	if d.file == nil {
-		return 0, errors.New("usb: device is not open")
+		return 0, errors.New("usbhid: device is not open")
 	}
 
 	return d.file.Write(buf)
