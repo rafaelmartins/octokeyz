@@ -1,10 +1,12 @@
 package usbhid
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 func sysfsReadAsString(dir string, entry string) (string, error) {
@@ -86,4 +88,16 @@ func listDevices() ([]*Device, error) {
 	}
 
 	return rv, nil
+}
+
+func (d *Device) lock() error {
+	if d.file == nil {
+		return errors.New("usbhid: device is not open")
+	}
+
+	if err := syscall.Flock(int(d.file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err == syscall.EWOULDBLOCK {
+		return ErrDeviceLocked
+	} else {
+		return err
+	}
 }

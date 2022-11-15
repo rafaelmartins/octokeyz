@@ -5,6 +5,10 @@ import (
 	"os"
 )
 
+var (
+	ErrDeviceLocked = errors.New("usbhid: device is locked by another application")
+)
+
 type Device struct {
 	path         string
 	vendorId     uint16
@@ -49,7 +53,7 @@ func (d *Device) Open() error {
 
 	d.file = f
 
-	return nil
+	return d.lock()
 }
 
 func (d *Device) IsOpen() bool {

@@ -147,3 +147,7 @@ func listDevices() ([]*Device, error) {
 
 	return rv, nil
 }
+
+func (d *Device) lock() error {
+	return nil
+}
