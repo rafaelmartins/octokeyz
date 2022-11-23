@@ -1,10 +1,25 @@
 package usbhid
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
+	"errors"
 	"os"
+	"path"
 	"strings"
 	"syscall"
 	"unsafe"
+)
+
+const (
+	kLOCKFILE_FAIL_IMMEDIATELY = 0x01
+	kLOCKFILE_EXCLUSIVE_LOCK   = 0x02
+	kERROR_LOCK_VIOLATION      = 0x21
+)
+
+var (
+	kernel32   = syscall.NewLazyDLL("kernel32.dll")
+	lockFileEx = kernel32.NewProc("LockFileEx")
 )
 
 const (
@@ -149,5 +164,42 @@ func listDevices() ([]*Device, error) {
 }
 
 func (d *Device) lock() error {
-	return nil
+	if d.file == nil {
+		return errors.New("usbhid: device is not open")
+	}
+
+	hash := sha1.Sum([]byte(d.path))
+	lockFile := path.Join(os.TempDir(), "b8-"+hex.EncodeToString(hash[:]))
+	if maxPath := 260 - len(".lock") - 1; len(lockFile) > maxPath {
+		lockFile = lockFile[:maxPath]
+	}
+	lockFile += ".lock"
+
+	err := func() error {
+		if err := os.WriteFile(lockFile, []byte{}, 0777); err != nil {
+			return err
+		}
+
+		f, err := os.Open(lockFile)
+		if err != nil {
+			return err
+		}
+
+		ovl := &syscall.Overlapped{}
+		_, _, err = lockFileEx.Call(f.Fd(), kLOCKFILE_EXCLUSIVE_LOCK|kLOCKFILE_FAIL_IMMEDIATELY, 0, 0xffffffff, 0xffffffff, uintptr(unsafe.Pointer(ovl)))
+		if err.(syscall.Errno) != 0 {
+			f.Close()
+			return err
+		}
+		d.flock = f
+
+		return nil
+	}()
+
+	if err != nil {
+		if errno, ok := err.(syscall.Errno); ok && errno == kERROR_LOCK_VIOLATION {
+			return ErrDeviceLocked
+		}
+	}
+	return err
 }

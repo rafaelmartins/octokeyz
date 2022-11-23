@@ -18,6 +18,7 @@ type Device struct {
 	product      string
 	serialNumber string
 	file         *os.File
+	flock        *os.File
 }
 
 type DeviceFilterFunc func(*Device) bool
@@ -68,8 +69,16 @@ func (d *Device) Close() error {
 	if err := d.file.Close(); err != nil {
 		return err
 	}
-
 	d.file = nil
+
+	if d.flock != nil {
+		fn := d.flock.Name()
+		if err := d.flock.Close(); err != nil {
+			return err
+		}
+		d.flock = nil
+		os.Remove(fn)
+	}
 
 	return nil
 }
