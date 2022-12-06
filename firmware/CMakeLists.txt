@@ -4,7 +4,19 @@
 cmake_minimum_required(VERSION 3.12)
 
 include(CheckIPOSupported)
-include(./cmake/avr.cmake)
+include(FetchContent)
+
+FetchContent_Declare(avr_cmake
+    GIT_REPOSITORY https://github.com/rafaelmartins/avr-cmake.git
+    GIT_TAG 8741c4a95c9e03b0db56b8ca6cc7260259375e31
+)
+FetchContent_Declare(v_usb
+    GIT_REPOSITORY https://github.com/obdev/v-usb.git
+    GIT_TAG 7a28fdc685952412dad2b8842429127bc1cf9fa7
+)
+FetchContent_MakeAvailable(avr_cmake v_usb)
+
+include(${avr_cmake_SOURCE_DIR}/cmake/avr.cmake)
 
 project(b8 C ASM)
 
@@ -12,13 +24,14 @@ add_executable(b8
     main.c
     bits.h
     usbconfig.h
-    usbdrv/usbdrv.c
-    usbdrv/usbdrv.h
-    usbdrv/usbdrvasm.S
+    ${v_usb_SOURCE_DIR}/usbdrv/usbdrv.c
+    ${v_usb_SOURCE_DIR}/usbdrv/usbdrv.h
+    ${v_usb_SOURCE_DIR}/usbdrv/usbdrvasm.S
 )
 
 target_include_directories(b8 PRIVATE
     .
+    ${v_usb_SOURCE_DIR}
 )
 
 target_compile_options(b8 PRIVATE
