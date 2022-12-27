@@ -15,6 +15,8 @@ I wanted the enclosure to be 3D-printed at home.
 
 I wanted it to be as USB HID compliant as possible, so I could learn more about it.
 
+I wanted the client library to support Linux and Windows.
+
 
 ## What is included
 
@@ -31,3 +33,55 @@ I wanted it to be as USB HID compliant as possible, so I could learn more about 
 ![Back](./share/images/r1.0-back.jpg)
 ![PCB Front](./share/images/r1.0-pcb-front.jpg)
 ![PCB Back](./share/images/r1.0-pcb-back.jpg)
+
+
+## Program examples
+
+### Simple
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"time"
+
+	"github.com/rafaelmartins/b8/go/b8"
+)
+
+func main() {
+	dev, err := b8.GetDevice("")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := dev.Open(); err != nil {
+		log.Fatal(err)
+	}
+	defer dev.Close()
+
+	for i := 0; i < 3; i++ {
+		dev.Led(b8.LedFlash)
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	dev.AddHandler(b8.BUTTON_1, func(b *b8.Button) error {
+		fmt.Println("pressed")
+		duration := b.WaitForRelease()
+		fmt.Printf("released. pressed for %s\n", duration)
+		return nil
+	})
+
+	if err := dev.Listen(); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
+
+## F.A.Q.
+
+### How to use this keypad to control `OBS`, similarly to what the `Stream Deck` does?
+
+You can write event handlers that interact with `OBS` by using the `goobs` library: https://github.com/andreykaipov/goobs
