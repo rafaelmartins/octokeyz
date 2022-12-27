@@ -164,10 +164,6 @@ func listDevices() ([]*Device, error) {
 }
 
 func (d *Device) lock() error {
-	if d.file == nil {
-		return errors.New("usbhid: device is not open")
-	}
-
 	hash := sha1.Sum([]byte(d.path))
 	lockFile := path.Join(os.TempDir(), "b8-"+hex.EncodeToString(hash[:]))
 	if maxPath := 260 - len(".lock") - 1; len(lockFile) > maxPath {
@@ -198,7 +194,7 @@ func (d *Device) lock() error {
 
 	if err != nil {
 		if errno, ok := err.(syscall.Errno); ok && errno == kERROR_LOCK_VIOLATION {
-			return ErrDeviceLocked
+			return fmt.Errorf("usbhid: %s: %w", d.path, ErrDeviceLocked)
 		}
 	}
 	return err

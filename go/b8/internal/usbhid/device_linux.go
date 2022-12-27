@@ -1,7 +1,7 @@
 package usbhid
 
 import (
-	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -91,12 +91,8 @@ func listDevices() ([]*Device, error) {
 }
 
 func (d *Device) lock() error {
-	if d.file == nil {
-		return errors.New("usbhid: device is not open")
-	}
-
 	if err := syscall.Flock(int(d.file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err == syscall.EWOULDBLOCK {
-		return ErrDeviceLocked
+		return fmt.Errorf("usbhid: %s: %w", d.path, ErrDeviceLocked)
 	} else {
 		return err
 	}

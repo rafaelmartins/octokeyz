@@ -2,11 +2,14 @@ package usbhid
 
 import (
 	"errors"
+	"fmt"
 	"os"
 )
 
 var (
-	ErrDeviceLocked = errors.New("usbhid: device is locked by another application")
+	ErrDeviceLocked    = errors.New("device is locked by another application")
+	ErrDeviceIsOpen    = errors.New("device is open")
+	ErrDeviceIsNotOpen = errors.New("device is not open")
 )
 
 type Device struct {
@@ -44,7 +47,7 @@ func ListDevices(f DeviceFilterFunc) ([]*Device, error) {
 
 func (d *Device) Open() error {
 	if d.file != nil {
-		return errors.New("usbhid: device is open")
+		return fmt.Errorf("usbhid: %s: %w", d.path, ErrDeviceIsOpen)
 	}
 
 	f, err := os.OpenFile(d.path, os.O_RDWR, 0755)
@@ -85,7 +88,7 @@ func (d *Device) Close() error {
 
 func (d *Device) Read(buf []byte) (int, error) {
 	if d.file == nil {
-		return 0, errors.New("usbhid: device is not open")
+		return 0, fmt.Errorf("usbhid: %s: %w", d.path, ErrDeviceIsNotOpen)
 	}
 
 	return d.file.Read(buf)
@@ -93,7 +96,7 @@ func (d *Device) Read(buf []byte) (int, error) {
 
 func (d *Device) Write(buf []byte) (int, error) {
 	if d.file == nil {
-		return 0, errors.New("usbhid: device is not open")
+		return 0, fmt.Errorf("usbhid: %s: %w", d.path, ErrDeviceIsNotOpen)
 	}
 
 	return d.file.Write(buf)
