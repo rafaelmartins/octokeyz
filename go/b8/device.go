@@ -14,6 +14,13 @@ const (
 	reportID        = 1
 )
 
+var (
+	ErrDeviceNotFound    = errors.New("device not found")
+	ErrDeviceMoreThanOne = errors.New("more than one device found")
+	ErrDeviceReadFailed  = errors.New("failed to read hid report")
+	ErrDeviceWriteFailed = errors.New("failed to write hid report")
+)
+
 type Device struct {
 	dev     *usbhid.Device
 	buttons map[ButtonID]*Button
@@ -57,9 +64,39 @@ func ListDevices() ([]*Device, error) {
 	return rv, nil
 }
 
+func GetDevice(serialNumber string) (*Device, error) {
+	devices, err := ListDevices()
+	if err != nil {
+		return nil, err
+	}
+	if len(devices) == 0 {
+		return nil, fmt.Errorf("b8: %q: %w", serialNumber, ErrDeviceNotFound)
+	}
+
+	if serialNumber == "" {
+		if len(devices) == 1 {
+			return devices[0], nil
+		}
+
+		sn := []string{}
+		for _, dev := range devices {
+			sn = append(sn, dev.SerialNumber())
+		}
+		return nil, fmt.Errorf("b8: %w: %q", ErrDeviceMoreThanOne, sn)
+	}
+
+	for _, dev := range devices {
+		if dev.SerialNumber() == serialNumber {
+			return dev, nil
+		}
+	}
+
+	return nil, fmt.Errorf("b8: %q: %w", serialNumber, ErrDeviceNotFound)
+}
+
 func (d *Device) Open() error {
 	if d.dev == nil {
-		return errors.New("b8: device not defined")
+		return ErrDeviceNotFound
 	}
 
 	return d.dev.Open()
@@ -67,7 +104,7 @@ func (d *Device) Open() error {
 
 func (d *Device) Close() error {
 	if d.dev == nil {
-		return nil
+		return ErrDeviceNotFound
 	}
 
 	return d.dev.Close()
@@ -88,8 +125,8 @@ func (d *Device) AddHandler(button ButtonID, fn ButtonHandler) {
 }
 
 func (d *Device) Listen() error {
-	if d.dev == nil || !d.dev.IsOpen() {
-		return errors.New("b8: device is not open")
+	if d.dev == nil {
+		return ErrDeviceNotFound
 	}
 
 	buf := make([]byte, inputReportLen*64)
@@ -97,11 +134,11 @@ func (d *Device) Listen() error {
 	for {
 		n, err := d.dev.Read(buf)
 		if err != nil {
-			return err
+			return fmt.Errorf("b8: %w: %s", ErrDeviceReadFailed, err)
 		}
 
 		if n%inputReportLen != 0 {
-			return errors.New("b8: failed to read hid report")
+			return fmt.Errorf("b8: %w: bad read size", ErrDeviceReadFailed)
 		}
 
 		t := time.Now()
@@ -130,4 +167,8 @@ func (d *Device) Listen() error {
 
 func (d *Device) Led(state LedState) error {
 	return led(d, state)
+}
+
+func (d *Device) SerialNumber() string {
+	return d.dev.SerialNumber()
 }
