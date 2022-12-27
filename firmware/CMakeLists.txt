@@ -20,6 +20,11 @@ include(${avr_cmake_SOURCE_DIR}/cmake/avr.cmake)
 
 project(b8 C ASM)
 
+option(WITH_MCU "AVR Microcontroller.")
+if(NOT WITH_MCU)
+    set(WITH_MCU "attiny4313" CACHE STRING "AVR Microcontroller" FORCE)
+endif()
+
 add_executable(b8
     main.c
     bits.h
@@ -28,6 +33,14 @@ add_executable(b8
     ${v_usb_SOURCE_DIR}/usbdrv/usbdrv.h
     ${v_usb_SOURCE_DIR}/usbdrv/usbdrvasm.S
 )
+
+# the code for automatically generated usb serial number won't fit 2k rom
+if(NOT WITH_MCU MATCHES "attiny2313*")
+    target_sources(b8 PRIVATE
+        serialnumber.c
+        serialnumber.h
+    )
+endif()
 
 target_include_directories(b8 PRIVATE
     .
@@ -43,7 +56,7 @@ target_compile_options(b8 PRIVATE
 check_ipo_supported()
 set_property(TARGET b8 PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 
-avr_target_set_device(b8 attiny2313a 20000000UL)
-avr_target_show_size(b8 attiny2313a)
+avr_target_set_device(b8 "${WITH_MCU}" 20000000UL)
+avr_target_show_size(b8 "${WITH_MCU}")
 avr_target_gen_map(b8)
 avr_target_generate_hex(b8)

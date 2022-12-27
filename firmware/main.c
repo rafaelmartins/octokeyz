@@ -6,14 +6,17 @@
  */
 
 #include <stdbool.h>
-#include <avr/eeprom.h>
 #include <avr/io.h>
 #include <avr/wdt.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
-#include "usbdrv/usbdrv.h"
+#include <usbdrv/usbdrv.h>
 #include "bits.h"
+
+#if !(defined(__AVR_ATtiny2313__) || defined(__AVR_ATtiny2313A__))
+#include "serialnumber.h"
+#endif
 
 const char usbHidReportDescriptor[] PROGMEM = {
     0x05, 0x0C,  // UsagePage(Consumer[12])
@@ -139,6 +142,10 @@ usbFunctionWrite(uchar *data, uchar len)
 int
 main(void)
 {
+#if !(defined(__AVR_ATtiny2313__) || defined(__AVR_ATtiny2313A__))
+    serialnumber_init();
+#endif
+
     PORTB = 0xff;
     DDR_SET(P_LED);
     PORT_SET(P_LED);
@@ -146,7 +153,7 @@ main(void)
     TCCR1A = 0;
     TIMSK = (1 << OCIE1A);
 
-    wdt_enable(WDTO_1S);
+    wdt_enable(WDTO_2S);
 
     usbInit();
     usbDeviceDisconnect();

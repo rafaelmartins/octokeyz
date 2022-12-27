@@ -356,7 +356,11 @@ section at the end of this file).
 #define USB_CFG_DESCR_PROPS_STRING_0                0
 #define USB_CFG_DESCR_PROPS_STRING_VENDOR           0
 #define USB_CFG_DESCR_PROPS_STRING_PRODUCT          0
+#if !(defined(__AVR_ATtiny2313__) || defined(__AVR_ATtiny2313A__))
+#define USB_CFG_DESCR_PROPS_STRING_SERIAL_NUMBER    (USB_PROP_IS_RAM | USB_PROP_LENGTH(18))
+#else
 #define USB_CFG_DESCR_PROPS_STRING_SERIAL_NUMBER    0
+#endif
 #define USB_CFG_DESCR_PROPS_HID                     0
 #define USB_CFG_DESCR_PROPS_HID_REPORT              0
 #define USB_CFG_DESCR_PROPS_UNKNOWN                 0
