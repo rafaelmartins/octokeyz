@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rafaelmartins/b8/go/b8/internal/usbhid"
+	"github.com/rafaelmartins/usbhid"
 )
 
 const (
-	inputReportLen  = 2
-	outputReportLen = 2
-	reportID        = 1
+	reportID = 1
 )
 
 var (
@@ -27,8 +25,18 @@ type Device struct {
 	data    byte
 }
 
+type LedState byte
+
+const (
+	LedOn = iota
+	LedFlash
+	LedSlowBlink
+	LedFastBlink
+	LedOff
+)
+
 func ListDevices() ([]*Device, error) {
-	devices, err := usbhid.ListDevices(func(d *usbhid.Device) bool {
+	devices, err := usbhid.Enumerate(func(d *usbhid.Device) bool {
 		if d.VendorId() != USBVendorId {
 			return false
 		}
@@ -53,10 +61,6 @@ func ListDevices() ([]*Device, error) {
 
 	rv := []*Device{}
 	for _, dev := range devices {
-		if (dev.Version() >> 8) != (USBVersion >> 8) {
-			return nil, fmt.Errorf("b8: device version is not compatible, please upgrade: %s: 0x%04x", dev.Path(), dev.Version())
-		}
-
 		rv = append(rv, &Device{
 			dev: dev,
 		})
@@ -70,7 +74,10 @@ func GetDevice(serialNumber string) (*Device, error) {
 		return nil, err
 	}
 	if len(devices) == 0 {
-		return nil, fmt.Errorf("b8: %q: %w", serialNumber, ErrDeviceNotFound)
+		if serialNumber != "" {
+			return nil, fmt.Errorf("b8: %q: %w", serialNumber, ErrDeviceNotFound)
+		}
+		return nil, fmt.Errorf("b8: %w", ErrDeviceNotFound)
 	}
 
 	if serialNumber == "" {
@@ -82,7 +89,8 @@ func GetDevice(serialNumber string) (*Device, error) {
 		for _, dev := range devices {
 			sn = append(sn, dev.SerialNumber())
 		}
-		return nil, fmt.Errorf("b8: %w: %q", ErrDeviceMoreThanOne, sn)
+
+		return nil, fmt.Errorf("b8: %q: %w", sn, ErrDeviceMoreThanOne)
 	}
 
 	for _, dev := range devices {
@@ -96,15 +104,19 @@ func GetDevice(serialNumber string) (*Device, error) {
 
 func (d *Device) Open() error {
 	if d.dev == nil {
-		return ErrDeviceNotFound
+		return fmt.Errorf("b8: %w", ErrDeviceNotFound)
 	}
 
-	return d.dev.Open()
+	if (d.dev.Version() >> 8) != (USBVersion >> 8) {
+		return fmt.Errorf("b8: device version is not compatible, please upgrade: %s: 0x%04x", d.dev.Path(), d.dev.Version())
+	}
+
+	return d.dev.Open(true)
 }
 
 func (d *Device) Close() error {
 	if d.dev == nil {
-		return ErrDeviceNotFound
+		return fmt.Errorf("b8: %w", ErrDeviceNotFound)
 	}
 
 	return d.dev.Close()
@@ -126,47 +138,50 @@ func (d *Device) AddHandler(button ButtonID, fn ButtonHandler) {
 
 func (d *Device) Listen() error {
 	if d.dev == nil {
-		return ErrDeviceNotFound
+		return fmt.Errorf("b8: %w", ErrDeviceNotFound)
 	}
 
-	buf := make([]byte, inputReportLen*64)
-
 	for {
-		n, err := d.dev.Read(buf)
+		id, buf, err := d.dev.GetInputReport()
 		if err != nil {
 			return fmt.Errorf("b8: %w: %s", ErrDeviceReadFailed, err)
 		}
 
-		if n%inputReportLen != 0 {
-			return fmt.Errorf("b8: %w: bad read size", ErrDeviceReadFailed)
+		if id != reportID {
+			return fmt.Errorf("b8: %w: bad input report id: %d", ErrDeviceReadFailed, id)
 		}
 
 		t := time.Now()
 
-		for i := 0; i < int(n); i += inputReportLen {
-			if buf[i] != reportID || buf[i+1] == d.data {
-				continue
-			}
+		if buf[0] == d.data {
+			continue
+		}
 
-			for j := 0; j < 8; j++ {
-				if v := buf[i+1] & (1 << j); v != (d.data & (1 << j)) {
-					if btn, ok := d.buttons[ButtonID(j)]; ok {
-						if v > 0 {
-							btn.press(t)
-						} else {
-							btn.release(t)
-						}
+		for j := 0; j < 8; j++ {
+			if v := buf[0] & (1 << j); v != (d.data & (1 << j)) {
+				if btn, ok := d.buttons[ButtonID(j)]; ok {
+					if v > 0 {
+						btn.press(t)
+					} else {
+						btn.release(t)
 					}
 				}
 			}
-
-			d.data = buf[i+1]
 		}
+
+		d.data = buf[0]
 	}
 }
 
 func (d *Device) Led(state LedState) error {
-	return led(d, state)
+	if d.dev == nil {
+		return fmt.Errorf("b8: %w", ErrDeviceNotFound)
+	}
+
+	if err := d.dev.SetOutputReport(reportID, []byte{byte(state)}); err != nil {
+		return fmt.Errorf("b8: %w: %s", ErrDeviceWriteFailed, err)
+	}
+	return nil
 }
 
 func (d *Device) SerialNumber() string {
