@@ -18,6 +18,13 @@
 #include "serialnumber.h"
 #endif
 
+FUSES = {
+    .low = FUSE_SUT1,
+    .high = FUSE_SPIEN,
+    .extended = EFUSE_DEFAULT,
+};
+LOCKBITS = LOCKBITS_DEFAULT;
+
 const char usbHidReportDescriptor[] PROGMEM = {
     0x05, 0x0C,  // UsagePage(Consumer[12])
     0x09, 0x01,  // UsageId(Consumer Control[1])
