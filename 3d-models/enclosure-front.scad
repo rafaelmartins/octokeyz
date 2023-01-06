@@ -32,11 +32,11 @@ difference() {
             translate([i * pcb_width, i * pcb_length, thickness]) {
                 rotate([0, 0, i * 180]) {
                     translate([pcb_screw1_x, pcb_screw1_y, 0])
-                        cylinder(pcb_screw_base_height, d=pcb_screw_d - 0.2, $fn=20);
+                        cylinder(pcb_screw_base_height, d=pcb_screw_d - 0.1, $fn=20);
                     translate([pcb_screw2_x, pcb_screw2_y, 0])
-                        cylinder(pcb_screw_base_height, d=pcb_screw_d - 0.2, $fn=20);
+                        cylinder(pcb_screw_base_height, d=pcb_screw_d - 0.1, $fn=20);
                     translate([pcb_screw3_x, pcb_screw3_y, 0])
-                        cylinder(pcb_screw_base_height, d=pcb_screw_d - 0.2, $fn=20);
+                        cylinder(pcb_screw_base_height, d=pcb_screw_d - 0.1, $fn=20);
                 }
             }
         }
