@@ -1,3 +1,7 @@
+// Copyright 2022-2023 Rafael G.Martins. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package b8
 
 import (
@@ -12,6 +16,8 @@ const (
 	reportID = 1
 )
 
+// Errors returned from b8 package may be tested against these errors
+// with errors.Is.
 var (
 	ErrDeviceNotFound    = errors.New("device not found")
 	ErrDeviceMoreThanOne = errors.New("more than one device found")
@@ -19,23 +25,37 @@ var (
 	ErrDeviceWriteFailed = errors.New("failed to write hid report")
 )
 
+// Device is an opaque structure that represents a b8 USB keypad device
+// connected to the computer.
 type Device struct {
 	dev     *usbhid.Device
 	buttons map[ButtonID]*Button
 	data    byte
 }
 
+// LedState represents a state to set the b8 USB keypad led to.
 type LedState byte
 
 const (
+
+	// LedOn sets the led on.
 	LedOn = iota
+
+	// LedFlash sets the led to flash on for a short time and go off.
 	LedFlash
+
+	// LedSlowBlink sets the led to blink slowly.
 	LedSlowBlink
+
+	// LedFastBlink sets the led to blink fastly.
 	LedFastBlink
+
+	// LedOff sets the led off.
 	LedOff
 )
 
-func ListDevices() ([]*Device, error) {
+// Enumerate lists the b8 USB keypads connected to the computer.
+func Enumerate() ([]*Device, error) {
 	devices, err := usbhid.Enumerate(func(d *usbhid.Device) bool {
 		if d.VendorId() != USBVendorId {
 			return false
@@ -68,8 +88,11 @@ func ListDevices() ([]*Device, error) {
 	return rv, nil
 }
 
+// GetDevice returns a b8 USB keypad found connected to the machine that matches the
+// provider serial number. If serial number is empty and only one device is connected,
+// this device is returned, otherwise an error is returned.
 func GetDevice(serialNumber string) (*Device, error) {
-	devices, err := ListDevices()
+	devices, err := Enumerate()
 	if err != nil {
 		return nil, err
 	}
@@ -102,18 +125,20 @@ func GetDevice(serialNumber string) (*Device, error) {
 	return nil, fmt.Errorf("b8: %q: %w", serialNumber, ErrDeviceNotFound)
 }
 
+// Open opens the b8 USB keypad for usage.
 func (d *Device) Open() error {
 	if d.dev == nil {
 		return fmt.Errorf("b8: %w", ErrDeviceNotFound)
 	}
 
-	if (d.dev.Version() >> 8) != (USBVersion >> 8) {
+	if byte(d.dev.Version()>>8) != USBVersion {
 		return fmt.Errorf("b8: device version is not compatible, please upgrade: %s: 0x%04x", d.dev.Path(), d.dev.Version())
 	}
 
 	return d.dev.Open(true)
 }
 
+// Close closes the b8 USB keypad.
 func (d *Device) Close() error {
 	if d.dev == nil {
 		return fmt.Errorf("b8: %w", ErrDeviceNotFound)
@@ -122,6 +147,8 @@ func (d *Device) Close() error {
 	return d.dev.Close()
 }
 
+// AddHandler registers a ButtonHandler callback to be called whenever the given
+// button is pressed.
 func (d *Device) AddHandler(button ButtonID, fn ButtonHandler) {
 	if fn == nil {
 		return
@@ -136,6 +163,8 @@ func (d *Device) AddHandler(button ButtonID, fn ButtonHandler) {
 	}
 }
 
+// Listen listens to button press events from the keypad and calls ButtonHandler
+// callbacks as required.
 func (d *Device) Listen() error {
 	if d.dev == nil {
 		return fmt.Errorf("b8: %w", ErrDeviceNotFound)
@@ -173,6 +202,7 @@ func (d *Device) Listen() error {
 	}
 }
 
+// Led sets the state of the b8 USB keypad led.
 func (d *Device) Led(state LedState) error {
 	if d.dev == nil {
 		return fmt.Errorf("b8: %w", ErrDeviceNotFound)
@@ -184,6 +214,7 @@ func (d *Device) Led(state LedState) error {
 	return nil
 }
 
+// SerialNumber returns the serial number of the b8 USB keypad.
 func (d *Device) SerialNumber() string {
 	return d.dev.SerialNumber()
 }
