@@ -26,7 +26,7 @@ void
 serialnumber_init(void)
 {
     uint32_t sn = eeprom_read_dword((uint32_t*) sn_addr);
-    if (sn == 0xffffffff) {
+    if (sn == 0 || sn == 0xffffffff) {
         uint8_t j = 0;
         for (uint8_t i = 0; i < 32 && j < 4; i++) {
             if (rand_bytes[i] != 0 && rand_bytes[i] != 0xff) {
