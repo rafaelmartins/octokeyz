@@ -123,8 +123,8 @@ func (b *Button) release(t time.Time) {
 // pressed to activated the handler is released. It returns the duration
 // of the button press.
 //
-// This function should not be called outside a ButtonHandler, as it may
-// result in undefined behavior.
+// This function should not be called outside a ButtonHandler. It may
+// cause undefined behavior.
 func (b *Button) WaitForRelease() time.Duration {
 	if b.duration != 0 {
 		return b.duration

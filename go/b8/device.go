@@ -37,7 +37,6 @@ type Device struct {
 type LedState byte
 
 const (
-
 	// LedOn sets the led on.
 	LedOn = iota
 
@@ -89,7 +88,7 @@ func Enumerate() ([]*Device, error) {
 }
 
 // GetDevice returns a b8 USB keypad found connected to the machine that matches the
-// provider serial number. If serial number is empty and only one device is connected,
+// provided serial number. If serial number is empty and only one device is connected,
 // this device is returned, otherwise an error is returned.
 func GetDevice(serialNumber string) (*Device, error) {
 	devices, err := Enumerate()
