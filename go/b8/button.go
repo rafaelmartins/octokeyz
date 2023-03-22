@@ -34,7 +34,7 @@ const (
 type Button struct {
 	mtx      sync.Mutex
 	id       ButtonID
-	channel  chan time.Duration
+	channel  chan bool
 	pressed  time.Time
 	released time.Time
 	duration time.Duration
@@ -73,18 +73,7 @@ func (b *Button) press(t time.Time) {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
 
-	// currently pressed
-	if !b.pressed.IsZero() && b.channel != nil {
-		// best effort, just try to unlock any pending goroutine
-		for range b.handlers {
-			select {
-			case b.channel <- 0:
-			default:
-			}
-		}
-	}
-
-	b.channel = make(chan time.Duration, 1)
+	b.channel = make(chan bool)
 	b.pressed = t
 	b.released = time.Time{}
 	b.duration = 0
@@ -110,13 +99,7 @@ func (b *Button) release(t time.Time) {
 	b.released = t
 	b.duration = b.released.Sub(b.pressed)
 	b.pressed = time.Time{}
-
-	for range b.handlers {
-		select {
-		case b.channel <- b.duration:
-		default:
-		}
-	}
+	close(b.channel)
 }
 
 // WaitForRelease blocks a button handler until the button that was
@@ -126,9 +109,6 @@ func (b *Button) release(t time.Time) {
 // This function should not be called outside a ButtonHandler. It may
 // cause undefined behavior.
 func (b *Button) WaitForRelease() time.Duration {
-	if b.duration != 0 {
-		return b.duration
-	}
-
-	return <-b.channel
+	<-b.channel
+	return b.duration
 }
