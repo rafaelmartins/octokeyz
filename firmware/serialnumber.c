@@ -15,7 +15,7 @@ static uint8_t rand_bytes[32] __attribute__((section(".noinit")));
 int usbDescriptorStringSerialNumber[9];
 
 
-static char
+static inline char
 byte2hex(uint8_t v)
 {
     return v > 9 ? v - 10 + 'a' : v + '0';
@@ -26,20 +26,18 @@ void
 serialnumber_init(void)
 {
     uint32_t sn = eeprom_read_dword((uint32_t*) sn_addr);
-    if (sn == 0 || sn == 0xffffffff) {
-        uint8_t j = 0;
-        for (uint8_t i = 0; i < 32 && j < 4; i++) {
-            if (rand_bytes[i] != 0 && rand_bytes[i] != 0xff) {
-                eeprom_write_byte(sn_addr + j++, rand_bytes[i]);
-            }
-        }
-        while (j < 4) {
-            eeprom_write_byte(sn_addr + j++, 0);
+    if (sn == 0xffffffff) {
+        for (uint8_t i = 0, j = 0; j < 4; j++) {
+            for (; i < 32 && (rand_bytes[i] == 0 || rand_bytes[i] == 0xff); i++);
+            eeprom_write_byte(sn_addr + j, i < 32 ? rand_bytes[i++] : 0xff);
+            eeprom_busy_wait();
         }
         sn = eeprom_read_dword((uint32_t*) sn_addr);
     }
 
-    usbDescriptorStringSerialNumber[0] = USB_STRING_DESCRIPTOR_HEADER(8);
-    for (uint8_t i = 0; i < 8; i++)
-        usbDescriptorStringSerialNumber[i % 2 ? i : i + 2] = byte2hex((sn >> (4 * i)) & 0xf);
+    if (sn != 0xffffffff) {
+        usbDescriptorStringSerialNumber[0] = USB_STRING_DESCRIPTOR_HEADER(8);
+        for (uint8_t i = 0; i < 8; i++)
+            usbDescriptorStringSerialNumber[i % 2 ? i : i + 2] = byte2hex((sn >> (4 * i)) & 0xf);
+    }
 }
