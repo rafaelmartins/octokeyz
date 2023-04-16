@@ -1,6 +1,3 @@
 {
-    "cmake.sourceDirectory": "${workspaceFolder}/firmware",
-    "gopls": {
-        "build.experimentalWorkspaceModule": true
-    }
+    "cmake.sourceDirectory": "${workspaceFolder}/firmware"
 }
