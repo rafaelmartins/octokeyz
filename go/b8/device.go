@@ -58,23 +58,25 @@ const (
 // Enumerate lists the b8 USB keypads connected to the computer.
 func Enumerate() ([]*Device, error) {
 	devices, err := usbhid.Enumerate(func(d *usbhid.Device) bool {
-		if d.VendorId() != USBVendorId {
+		switch d.VendorId() {
+		case USBVendorId:
+			return d.ProductId() == USBProductId
+
+		case 0x16c0: // old v-usb shared vid
+			if d.ProductId() != 0x05df { // old v-usb shared hid pid
+				return false
+			}
+			if d.Manufacturer() != USBManufacturer {
+				return false
+			}
+			if d.Product() != USBProduct {
+				return false
+			}
+			return true
+
+		default:
 			return false
 		}
-
-		if d.ProductId() != USBProductId {
-			return false
-		}
-
-		if d.Manufacturer() != USBManufacturer {
-			return false
-		}
-
-		if d.Product() != USBProduct {
-			return false
-		}
-
-		return true
 	})
 	if err != nil {
 		return nil, err

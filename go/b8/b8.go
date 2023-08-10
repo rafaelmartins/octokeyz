@@ -7,10 +7,10 @@ package b8
 
 const (
 	// USB vendor identifier reported by b8
-	USBVendorId uint16 = 0x16c0
+	USBVendorId uint16 = 0x1d50
 
 	// USB product identifier reported by b8
-	USBProductId uint16 = 0x05df
+	USBProductId uint16 = 0x6184
 
 	// Major USB version number reported by b8 that is supported by this package
 	// (this is the interface version, not a USB protocol or product version)
