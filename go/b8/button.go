@@ -20,7 +20,7 @@ type ButtonID uint8
 
 // A b8 USB keypad contains 8 buttons
 const (
-	BUTTON_1 ButtonID = iota
+	BUTTON_1 ButtonID = iota + 1
 	BUTTON_2
 	BUTTON_3
 	BUTTON_4
@@ -56,7 +56,7 @@ func newButtons() map[ButtonID]*Button {
 
 // String returns a string representation of a button
 func (b *Button) String() string {
-	return fmt.Sprintf("BUTTON_%d", b.id+1)
+	return fmt.Sprintf("BUTTON_%d", b.id)
 }
 
 func (b *Button) addHandler(h ButtonHandler) {

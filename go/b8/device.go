@@ -19,10 +19,12 @@ const (
 // Errors returned from b8 package may be tested against these errors
 // with errors.Is.
 var (
-	ErrDeviceNotFound    = errors.New("device not found")
-	ErrDeviceMoreThanOne = errors.New("more than one device found")
-	ErrDeviceReadFailed  = errors.New("failed to read hid report")
-	ErrDeviceWriteFailed = errors.New("failed to write hid report")
+	ErrButtonInvalid        = errors.New("button is not valid")
+	ErrButtonHandlerInvalid = errors.New("button handler is not valid")
+	ErrDeviceNotFound       = errors.New("device not found")
+	ErrDeviceMoreThanOne    = errors.New("more than one device found")
+	ErrDeviceReadFailed     = errors.New("failed to read hid report")
+	ErrDeviceWriteFailed    = errors.New("failed to write hid report")
 )
 
 // Device is an opaque structure that represents a b8 USB keypad device
@@ -148,9 +150,9 @@ func (d *Device) Close() error {
 
 // AddHandler registers a ButtonHandler callback to be called whenever the given
 // button is pressed.
-func (d *Device) AddHandler(button ButtonID, fn ButtonHandler) {
+func (d *Device) AddHandler(button ButtonID, fn ButtonHandler) error {
 	if fn == nil {
-		return
+		return ErrButtonHandlerInvalid
 	}
 
 	if d.buttons == nil {
@@ -159,7 +161,9 @@ func (d *Device) AddHandler(button ButtonID, fn ButtonHandler) {
 
 	if btn, ok := d.buttons[button]; ok {
 		btn.addHandler(fn)
+		return nil
 	}
+	return ErrButtonInvalid
 }
 
 // Listen listens to button press events from the keypad and calls ButtonHandler
@@ -187,7 +191,7 @@ func (d *Device) Listen() error {
 
 		for j := 0; j < 8; j++ {
 			if v := buf[0] & (1 << j); v != (d.data & (1 << j)) {
-				if btn, ok := d.buttons[ButtonID(j)]; ok {
+				if btn, ok := d.buttons[BUTTON_1+ButtonID(j)]; ok {
 					if v > 0 {
 						btn.press(t)
 					} else {
