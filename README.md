@@ -73,7 +73,7 @@ func main() {
 		return nil
 	})
 
-	if err := dev.Listen(); err != nil {
+	if err := dev.Listen(nil); err != nil {
 		log.Fatal(err)
 	}
 }
