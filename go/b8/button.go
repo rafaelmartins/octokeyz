@@ -18,6 +18,11 @@ type ButtonHandler func(b *Button) error
 // ButtonID represents the identifier of a button.
 type ButtonID uint8
 
+// String returns a string representation of a button identifier
+func (b ButtonID) String() string {
+	return fmt.Sprintf("BUTTON_%d", b)
+}
+
 // A b8 USB keypad contains 8 buttons
 const (
 	BUTTON_1 ButtonID = iota + 1
@@ -29,6 +34,18 @@ const (
 	BUTTON_7
 	BUTTON_8
 )
+
+// ButtonHandlerError represents the error returned by a button handler
+// including the button identifier.
+type ButtonHandlerError struct {
+	ButtonID ButtonID
+	Err      error
+}
+
+// Error returns a string representation of a button handler error.
+func (b ButtonHandlerError) Error() string {
+	return fmt.Sprintf("b8: %s: %s", b.ButtonID, b.Err)
+}
 
 // Button is an opaque structure that represents a b8 USB keypad button.
 type Button struct {
@@ -56,7 +73,7 @@ func newButtons() map[ButtonID]*Button {
 
 // String returns a string representation of a button
 func (b *Button) String() string {
-	return fmt.Sprintf("BUTTON_%d", b.id)
+	return b.id.String()
 }
 
 func (b *Button) addHandler(h ButtonHandler) {
@@ -69,7 +86,7 @@ func (b *Button) addHandler(h ButtonHandler) {
 	b.mtx.Unlock()
 }
 
-func (b *Button) press(t time.Time) {
+func (b *Button) press(t time.Time, errCh chan error) {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
 
@@ -81,7 +98,19 @@ func (b *Button) press(t time.Time) {
 	for _, h := range b.handlers {
 		go func(btn *Button, hnd ButtonHandler) {
 			if err := hnd(btn); err != nil {
-				log.Printf("error: b8: %s handler: %s", b, err)
+				e := ButtonHandlerError{
+					ButtonID: btn.id,
+					Err:      err,
+				}
+
+				if errCh != nil {
+					select {
+					case errCh <- e:
+					default:
+					}
+				} else {
+					log.Printf("error: %s", e)
+				}
 			}
 		}(b, h)
 	}

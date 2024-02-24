@@ -170,7 +170,11 @@ func (d *Device) AddHandler(button ButtonID, fn ButtonHandler) error {
 
 // Listen listens to button press events from the keypad and calls ButtonHandler
 // callbacks as required.
-func (d *Device) Listen() error {
+//
+// errCh is an error channel to receive errors from the button handlers. If set
+// to a nil channel, errors are sent to standard logger. Errors are sent
+// non-blocking.
+func (d *Device) Listen(errCh chan error) error {
 	if d.dev == nil {
 		return fmt.Errorf("b8: %w", ErrDeviceNotFound)
 	}
@@ -195,7 +199,7 @@ func (d *Device) Listen() error {
 			if v := buf[0] & (1 << j); v != (d.data & (1 << j)) {
 				if btn, ok := d.buttons[BUTTON_1+ButtonID(j)]; ok {
 					if v > 0 {
-						btn.press(t)
+						btn.press(t, errCh)
 					} else {
 						btn.release(t)
 					}
