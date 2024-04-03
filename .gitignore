@@ -41,3 +41,6 @@ fp-info-cache
 *.gto
 *.gtp
 *.gts
+
+# FreeCAD
+*.FCStd[0-9]*

@@ -1,0 +1,21 @@
+b8.kicad_sym:
+b8.pretty/*:
+3d-models/R_YAGEO_*:
+
+    KiCad Libraries License (https://www.kicad.org/libraries/license/)
+
+3d-models/C_TDK_*:
+3d-models/CP_Radial_*:
+3d-models/SW_PUSH-12mm.*:
+3d-models/USB_Mini-B_PTH.step:
+
+    (c) SnapEDA
+
+    Creative Commons Attribution-ShareAlike 4.0 International License
+    (CC BY-SA), with Design Exception 1.0:
+
+    > You have permission to propagate a work of a design, design file(s)
+    > and/or manufactured board(s) formed by combining CAD symbols,
+    > footprints, and 3D models provided by SnapEDA, even if such propagation
+    > would otherwise violate the terms of CC BY-SA. You may then convey such
+    > a combination under terms of your choice.
