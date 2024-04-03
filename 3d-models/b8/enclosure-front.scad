@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: CERN-OHL-S-2.0
  */
 
-include <lib/screw-base.scad>
+include <../lib/screw-base.scad>
 include <settings.scad>
 
 difference() {
