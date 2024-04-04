@@ -6,4 +6,4 @@
 include <settings.scad>
 include <../lib/led-holder.scad>
 
-led_holder(pcb_screw_base_height - 2.5);
+led_holder(display_pcb_base_height - 2.5);

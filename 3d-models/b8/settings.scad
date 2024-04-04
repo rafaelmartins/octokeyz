@@ -39,7 +39,7 @@ led_x = button0_x + 3 * button_distance;
 led_y = 5.207 + 12.192;
 led_d = 3.4;
 
-gap = thickness * 0.2;
+gap = 0;
 
 width = pcb_width + 2 * pcb_padding_x;
 length = pcb_length + 2 * pcb_padding_y;
