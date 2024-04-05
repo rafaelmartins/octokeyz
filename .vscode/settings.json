@@ -1,5 +1,6 @@
 {
     "cmake.sourceDirectory": [
-        "${workspaceFolder}/firmware/b8"
+        "${workspaceFolder}/firmware/b8",
+        "${workspaceFolder}/firmware/b8-mega"
     ]
 }
