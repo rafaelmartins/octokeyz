@@ -1,4 +1,4 @@
-// Copyright 2022-2023 Rafael G.Martins. All rights reserved.
+// Copyright 2022-2024 Rafael G. Martins. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -12,27 +12,28 @@ import (
 	"github.com/rafaelmartins/usbhid"
 )
 
-const (
-	reportID = 1
-)
-
 // Errors returned from b8 package may be tested against these errors
 // with errors.Is.
 var (
-	ErrButtonInvalid        = errors.New("button is not valid")
-	ErrButtonHandlerInvalid = errors.New("button handler is not valid")
-	ErrDeviceNotFound       = errors.New("device not found")
-	ErrDeviceMoreThanOne    = errors.New("more than one device found")
-	ErrDeviceReadFailed     = errors.New("failed to read hid report")
-	ErrDeviceWriteFailed    = errors.New("failed to write hid report")
+	ErrButtonInvalid           = errors.New("button is not valid")
+	ErrButtonHandlerInvalid    = errors.New("button handler is not valid")
+	ErrDeviceNotFound          = errors.New("device not found")
+	ErrDeviceMoreThanOne       = errors.New("more than one device found")
+	ErrDeviceReadFailed        = errors.New("failed to read hid report")
+	ErrDeviceWriteFailed       = errors.New("failed to write hid report")
+	ErrDisplayNotSupported     = errors.New("hardware does not includes a display")
+	ErrDisplayBadNumberOfLines = errors.New("hardware reported an incompatible number of display lines")
 )
 
 // Device is an opaque structure that represents a b8 USB keypad device
 // connected to the computer.
 type Device struct {
-	dev     *usbhid.Device
-	buttons map[ButtonID]*Button
-	data    byte
+	dev                 *usbhid.Device
+	buttons             map[ButtonID]*Button
+	data                byte
+	legacyLedState      bool
+	withDisplay         bool
+	displayCharsPerLine byte
 }
 
 // LedState represents a state to set the b8 USB keypad led to.
@@ -40,7 +41,7 @@ type LedState byte
 
 const (
 	// LedOn sets the led on.
-	LedOn = iota
+	LedOn = iota + 1
 
 	// LedFlash sets the led to flash on for a short time and go off.
 	LedFlash
@@ -138,7 +139,35 @@ func (d *Device) Open() error {
 		return fmt.Errorf("b8: device version is not compatible, please upgrade: %s: 0x%04x", d.dev.Path(), d.dev.Version())
 	}
 
-	return d.dev.Open(true)
+	if byte(d.dev.Version()) < 1 {
+		d.legacyLedState = true
+	}
+
+	if err := d.dev.Open(true); err != nil {
+		return err
+	}
+
+	if buf, err := d.dev.GetFeatureReport(1); err == nil {
+		d.withDisplay = buf[0] == (1 << 0)
+
+		if d.withDisplay {
+			buf, err = d.dev.GetFeatureReport(2)
+			if err != nil {
+				return err
+			}
+
+			if buf[0] != 8 {
+				return fmt.Errorf("b8: %w", ErrDisplayBadNumberOfLines)
+			}
+
+			d.displayCharsPerLine = buf[1]
+
+			if err := d.DisplayClear(); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // Close closes the b8 USB keypad.
@@ -185,8 +214,8 @@ func (d *Device) Listen(errCh chan error) error {
 			return fmt.Errorf("b8: %w: %s", ErrDeviceReadFailed, err)
 		}
 
-		if id != reportID {
-			return fmt.Errorf("b8: %w: bad input report id: %d", ErrDeviceReadFailed, id)
+		if id != 1 {
+			continue
 		}
 
 		t := time.Now()
@@ -217,7 +246,11 @@ func (d *Device) Led(state LedState) error {
 		return fmt.Errorf("b8: %w", ErrDeviceNotFound)
 	}
 
-	if err := d.dev.SetOutputReport(reportID, []byte{byte(state)}); err != nil {
+	if d.legacyLedState {
+		state--
+	}
+
+	if err := d.dev.SetOutputReport(1, []byte{byte(state)}); err != nil {
 		return fmt.Errorf("b8: %w: %s", ErrDeviceWriteFailed, err)
 	}
 	return nil
