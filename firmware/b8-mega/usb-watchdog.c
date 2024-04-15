@@ -27,11 +27,9 @@ usb_watchdog_init(void)
 void
 usb_watchdog_reset(void)
 {
-    if ((TIM2->CR1 & TIM_CR1_CEN) != TIM_CR1_CEN) {
-        TIM2->CR1 |= TIM_EGR_UG | TIM_CR1_CEN;
-        return;
-    }
     TIM2->EGR |= TIM_EGR_UG;
+    if ((TIM2->CR1 & TIM_CR1_CEN) != TIM_CR1_CEN)
+        TIM2->CR1 |= TIM_CR1_CEN;
 }
 
 
