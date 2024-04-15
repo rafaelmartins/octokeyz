@@ -26,25 +26,25 @@ static_assert(display_lines          == 8);
 static_assert(display_font_width     == 5);
 static_assert(display_font_height    == 7);
 
-#define _line(line)                             \
-{                                               \
-    /* render empty lines to clean screen */    \
-    .state = DISPLAY_LINE_STATE_PENDING_COMMANDS,  \
-    .commands = {                               \
-        /* Co = 0; D/C# = 0 */                  \
-        0x00,                                   \
-        /* set line address */                  \
-        0xB0 | line,                            \
-        /* set column address 4 lower bits */   \
-        0x02,                                   \
-        /* set column address 4 higher bits */  \
-        0x10,                                   \
-    },                                          \
-    .data = {                                   \
-        /* Co = 0; D/C# = 1 */                  \
-        0x40,                                   \
-    },                                          \
-    .with_backlog = false,                      \
+#define _line(line)                                 \
+{                                                   \
+    /* render empty lines to clean screen */        \
+    .state = DISPLAY_LINE_STATE_PENDING_COMMANDS,   \
+    .commands = {                                   \
+        /* Co = 0; D/C# = 0 */                      \
+        0x00,                                       \
+        /* set line address */                      \
+        0xB0 | line,                                \
+        /* set column address 4 lower bits */       \
+        0x02,                                       \
+        /* set column address 4 higher bits */      \
+        0x10,                                       \
+    },                                              \
+    .data = {                                       \
+        /* Co = 0; D/C# = 1 */                      \
+        0x40,                                       \
+    },                                              \
+    .with_backlog = false,                          \
 }
 
 static struct {
