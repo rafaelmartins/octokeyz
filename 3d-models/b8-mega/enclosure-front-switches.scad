@@ -4,7 +4,6 @@
  */
 
 include <../lib/screw-base.scad>
-include <../lib/ssd1306.scad>
 include <settings.scad>
 
 
