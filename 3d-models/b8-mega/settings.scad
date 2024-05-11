@@ -17,8 +17,9 @@ pcb_base_screw_d = 1.8;
 pcb_screw_padding = 2.54;
 pcb_thickness = 1.6;
 
-pcb_padding_x = thickness + 1;
-pcb_padding_y = thickness + 1;
+pcb_gap = 1;
+pcb_padding_x = thickness + pcb_gap;
+pcb_padding_y = thickness + pcb_gap;
 
 display_pcb_length = 39.624;
 display_pcb_width = 33.782;
@@ -66,3 +67,14 @@ key_dim = 16;
 key_distance = 19.304;
 key0_x = 13.335 - key_dim / 2;
 key0_y = key0_x;
+
+base_screw_d = 1.8;
+base_screw_h = 5;
+base_screw_padding = 8;
+base_screw_padding_bottom = 25;
+
+base_length = switches_length;
+base_width = display_width + switches_width - pcb_gap - thickness;
+base_height = 16;
+
+back_screw3_padding = 10;

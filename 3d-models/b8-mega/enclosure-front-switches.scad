@@ -68,7 +68,7 @@ difference() {
     translate([screw_base_dim(screw_d) / 2, 0, switches_height - screw_base_dim(screw_d) / 2])
         rotate([-90, 0, 0])
             cylinder(h=thickness, d=screw_d * 1.1, $fn=20);
-    translate([(switches_length - display_length) - screw_base_dim(screw_d) / 2, 0,
+    translate([(switches_length - display_length - back_screw3_padding) - screw_base_dim(screw_d) / 2, 0,
                switches_height - screw_base_dim(screw_d) / 2])
         rotate([-90, 0, 0])
             cylinder(h=thickness, d=screw_d * 1.1, $fn=20);
