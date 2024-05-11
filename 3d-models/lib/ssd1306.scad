@@ -9,10 +9,10 @@ ssd1306_pcb_base_d = 4;
 ssd1306_pcb_base_screw_d = 1.8;
 ssd1306_pcb_base_spacing_x = 23.5;
 ssd1306_pcb_base_spacing_y = 23.8;
-ssd1306_screen_width = 25.5;
-ssd1306_screen_height = 14.5;
+ssd1306_screen_width = 24.5;
+ssd1306_screen_height = 13;
 ssd1306_screen_distance_x = (ssd1306_pcb_base_spacing_x - ssd1306_screen_width) / 2;
-ssd1306_screen_distance_y = 2.3;
+ssd1306_screen_distance_y = 3.5;
 ssd1306_pin_distance_y = 0.45;
 
 
