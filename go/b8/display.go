@@ -64,3 +64,9 @@ func (d *Device) DisplayClear() error {
 	}
 	return nil
 }
+
+// GetDisplayCharsPerLine returns how many characters can fit in a display line
+// without overflowing.
+func (d *Device) GetDisplayCharsPerLine() byte {
+	return d.displayCharsPerLine
+}
