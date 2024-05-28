@@ -296,18 +296,18 @@ task_stop(void)
 void
 display_task(void)
 {
-    static bool busy = false;
+    static bool dma_free = true;
 
-    if ((DMA1->ISR & DMA_ISR_TCIF2) == (DMA_ISR_TCIF2) && (I2C1->ISR & I2C_ISR_STOPF) == (I2C_ISR_STOPF)) {
-        I2C1->ICR |= I2C_ICR_STOPCF;
+    if (((DMA1->ISR & DMA_ISR_TCIF2) == DMA_ISR_TCIF2) && ((I2C1->ISR & I2C_ISR_STOPF) == I2C_ISR_STOPF)) {
+        I2C1->ICR = I2C_ICR_STOPCF;
         DMA1->IFCR = DMA_IFCR_CTCIF2;
         DMA1_Channel2->CCR &= ~DMA_CCR_EN;
 
         task_stop();
-        busy = false;
+        dma_free = true;
         return;
     }
 
-    if ((!busy) && task_start())
-        busy = true;
+    if (dma_free && task_start())
+        dma_free = false;
 }
