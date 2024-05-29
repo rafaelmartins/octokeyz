@@ -7,15 +7,27 @@ A simple USB keypad with 8 programmable buttons.
 
 I wanted to have a simple keypad I could use to control my computer.
 
-I wanted to be able to write userspace programs in Golang, that would react to the keypress events in the keypad, and execute some programmed action, instead of building long sequences of keypress macros.
+I wanted to be able to write userspace programs in Golang, that would react to the keypress events in the keypad and execute some Golang code instead of building long sequences of keypress macros.
 
 I wanted the PCB to be simple (PTH parts only), to have only the buttons and a single indicator LED, and to use the simplest/smallest microcontroller that could handle USB 1.1 and 8 buttons.
 
 I wanted the enclosure to be 3D-printed at home.
 
-I wanted it to be as USB HID compliant as possible, so I could learn more about it.
+I wanted it to be as USB HID compliant as possible, so I could learn more about the USB stack and specifications.
 
-I wanted the client library to support Linux and Windows.
+I wanted the client library to support at least Linux and Windows.
+
+> [!NOTE]
+> After using the original `b8` keypad for a few months I realized that having a small OLED screen added to the keypad could be very useful. This new addition required using a more powerful microcontroller (I picked the [`STM32F042K6`](https://www.st.com/en/microcontrollers-microprocessors/stm32f042k6.html), which is not PTH, but is quite easy to hand-solder).
+>
+> These additions resulted in a new `b8` keypad variant named [`b8-mega`](#b8-mega). This new variant also includes support for 5-pin mechanical keyboard switches instead of the simpler 12mm SPST push-buttons used in the original variant.
+>
+> The original `b8` keypad variant is still actively used and maintained.
+
+
+## Variants
+
+After a few months using the original `b8` keypad I realized that having a small OLED screen could be interesting.
 
 
 ## What is included
