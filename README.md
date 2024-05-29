@@ -7,7 +7,7 @@ A simple USB keypad with 8 programmable buttons.
 
 - [x] I want to have a simple keypad I can use to control my computer.
 - [x] I want to be able to write userspace programs in Golang, that will react to the keypress events in the keypad and execute some Golang code instead of building long sequences of keypress macros.
-- [x] I want the PCB to be simple (PTH parts only), to have only the buttons and a single indicator LED, and to use the simplest/smallest microcontroller that can handle USB 1.1 and 8 buttons, like the [ATtiny4313](https://www.microchip.com/en-us/product/attiny4313).
+- [x] I want the PCB to be simple (PTH parts only), to have only the buttons and a single indicator LED, and to use the simplest/smallest microcontroller that can handle USB 1.1 and 8 buttons, like the [`ATtiny4313`](https://www.microchip.com/en-us/product/attiny4313).
 - [x] I want the enclosure to be 3D-printable at home.
 - [x] I want the firmware to be as USB HID compliant as possible, so I can learn more about the USB stack and specifications.
 - [x] I want the client library to support at least Linux and Windows.
