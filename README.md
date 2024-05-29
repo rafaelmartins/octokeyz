@@ -22,24 +22,43 @@ A simple USB keypad with 8 programmable buttons.
 
 ## Variants
 
+> [!TIP]
+> The following resources are common to all variants:
+>
+> - [Golang client library](./go/b8/)
+> - [`udev` rules for Linux](./share/udev/)
+
+
 ### b8-mega
+
+- [Firmware source code](./firmware/b8-mega/)
+- Printed Circuit Board
+  - [Interactive Bill of Materials](https://rafaelmartins.github.io/b8/ibom/b8-mega.html)
+  - [Kicad sources](./pcb/b8-mega/)
+- [Enclosure 3D models](./3d-models/b8-mega/)
 
 ![b8-mega Front](./share/images/b8-mega/front.jpg)
 ![b8-mega Top](./share/images/b8-mega/top.jpg)
 ![b8-mega Side](./share/images/b8-mega/side.jpg)
 
+
 ### b8
+
+- [Firmware source code](./firmware/b8/)
+- Printed Circuit Board
+  - [Interactive Bill of Materials](https://rafaelmartins.github.io/b8/ibom/b8.html)
+  - [Kicad sources](./pcb/b8/)
+- [Enclosure 3D models](./3d-models/b8/)
 
 ![b8 Front](./share/images/b8/front.jpg)
 ![b8 Top](./share/images/b8/top.jpg)
 
 
-## What is included
+### What is included
 
-- [Firmware source code](./firmware/)
 - [Golang client library](./go/b8/)
 - [Printed Circuit Board (Kicad sources)](./pcb/)
-- [3D models for simple enclosures](./3d-models/)
+
 - [`udev` rules for Linux](./share/udev/)
 
 
