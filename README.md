@@ -54,14 +54,6 @@ A simple USB keypad with 8 programmable buttons.
 ![b8 Top](./share/images/b8/top.jpg)
 
 
-### What is included
-
-- [Golang client library](./go/b8/)
-- [Printed Circuit Board (Kicad sources)](./pcb/)
-
-- [`udev` rules for Linux](./share/udev/)
-
-
 ## Program examples
 
 ### Simple
