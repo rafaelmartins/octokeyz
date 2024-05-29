@@ -41,7 +41,7 @@ type LedState byte
 
 const (
 	// LedOn sets the led on.
-	LedOn = iota + 1
+	LedOn LedState = iota + 1
 
 	// LedFlash sets the led to flash on for a short time and go off.
 	LedFlash
