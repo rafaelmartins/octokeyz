@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ibom
-          path: *.html
+          path: "*.html"
 
   build-website:
     runs-on: ubuntu-latest
