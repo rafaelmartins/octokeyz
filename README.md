@@ -5,12 +5,12 @@ A simple USB keypad with 8 programmable buttons.
 
 ## Motivation / Project requirements
 
-- [x] I wanted to have a simple keypad I could use to control my computer.
-- [x] I wanted to be able to write userspace programs in Golang, that would react to the keypress events in the keypad and execute some Golang code instead of building long sequences of keypress macros.
-- [x] I wanted the PCB to be simple (PTH parts only), to have only the buttons and a single indicator LED, and to use the simplest/smallest microcontroller that could handle USB 1.1 and 8 buttons (I picked one of my favorites: [ATtiny4313](https://www.microchip.com/en-us/product/attiny4313)).
-- [x] I wanted the enclosure to be 3D-printed at home.
-- [x] I wanted it to be as USB HID compliant as possible, so I could learn more about the USB stack and specifications.
-- [x] I wanted the client library to support at least Linux and Windows.
+- [x] I want to have a simple keypad I can use to control my computer.
+- [x] I want to be able to write userspace programs in Golang, that will react to the keypress events in the keypad and execute some Golang code instead of building long sequences of keypress macros.
+- [x] I want the PCB to be simple (PTH parts only), to have only the buttons and a single indicator LED, and to use the simplest/smallest microcontroller that can handle USB 1.1 and 8 buttons, like the [ATtiny4313](https://www.microchip.com/en-us/product/attiny4313).
+- [x] I want the enclosure to be 3D-printable at home.
+- [x] I want the firmware to be as USB HID compliant as possible, so I can learn more about the USB stack and specifications.
+- [x] I want the client library to support at least Linux and Windows.
 
 > [!NOTE]
 > After using the original [`b8`](#b8) keypad for a few months I realized that having a small OLED screen added to the keypad could be very useful. This new addition required using a more powerful microcontroller (I picked the [`STM32F042K6`](https://www.st.com/en/microcontrollers-microprocessors/stm32f042k6.html), which is not PTH, but still quite easy to hand-solder).
@@ -90,6 +90,10 @@ func main() {
 
 ## F.A.Q.
 
+### How to implement a more complex client software?
+
+Please check the Golang [API documentation](https://pkg.go.dev/github.com/rafaelmartins/b8/go/b8).
+
 ### How to use this keypad to control `OBS`, similarly to what the `Stream Deck` does?
 
-You can write event handlers that interact with `OBS` by using the `goobs` library: https://github.com/andreykaipov/goobs
+It is possible to write Golang code that interacts with `OBS` by using the `goobs` library: https://github.com/andreykaipov/goobs. This library could be easily integrated with our [Golang client library](./go/b8/).
