@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2022 Rafael G. Martins <rafael@rafaelmartins.eng.br>
- * SPDX-License-Identifier: CERN-OHL-S-2.0
- */
+// SPDX-FileCopyrightText: 2022-2024 Rafael G. Martins <rafael@rafaelmartins.eng.br>
+// SPDX-License-Identifier: CERN-OHL-S-2.0
 
 module led_holder(height) {
     led_width = 1.8;

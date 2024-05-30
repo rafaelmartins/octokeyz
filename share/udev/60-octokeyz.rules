@@ -1,0 +1,2 @@
+# rgm.io octokeyz
+SUBSYSTEMS=="usb", DRIVERS=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="6184", TAG+="uaccess"

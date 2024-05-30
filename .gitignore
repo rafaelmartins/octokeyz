@@ -19,6 +19,7 @@ _deps
 *.bck
 *.kicad_pcb-bak
 *~
+~*.lck
 \#auto_saved_files\#
 _autosave-*
 *.tmp

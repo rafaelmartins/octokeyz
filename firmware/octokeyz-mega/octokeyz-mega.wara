@@ -1,0 +1,131 @@
+[[usagePage]]
+id = 0xff00
+name = 'octokeyz'
+
+    [[usagePage.usage]]
+    id = 1
+    name = 'Capabilities'
+    types = ['CL']
+
+    [[usagePage.usage]]
+    id = 2
+    name = 'With Display'
+    types = ['SF']
+
+    [[usagePage.usage]]
+    id = 17
+    name = 'Display Capabilities'
+    types = ['CL']
+
+    [[usagePage.usage]]
+    id = 18
+    name = 'Display Lines'
+    types = ['SV']
+
+    [[usagePage.usage]]
+    id = 19
+    name = 'Display Characters per Line'
+    types = ['SV']
+
+    [[usagePage.usage]]
+    id = 33
+    name = 'Display Data'
+    types = ['CL']
+
+    [[usagePage.usage]]
+    id = 34
+    name = 'Line'
+    types = ['DV']
+
+    [[usagePage.usage]]
+    id = 35
+    name = 'Line Data'
+    types = ['DV']
+
+    [[usagePage.usage]]
+    id = 49
+    name = 'Alignment'
+    types = ['UM']
+
+    [[usagePage.usage]]
+    id = 50
+    name = 'Alignment Left'
+    types = ['Sel']
+
+    [[usagePage.usage]]
+    id = 51
+    name = 'Alignment Right'
+    types = ['Sel']
+
+    [[usagePage.usage]]
+    id = 52
+    name = 'Alignment Center'
+    types = ['Sel']
+
+[[applicationCollection]]
+usage = ['Consumer', 'Consumer Control']
+
+    [[applicationCollection.inputReport]]
+
+        [[applicationCollection.inputReport.logicalCollection]]
+        usage = ['Consumer', 'Programmable Buttons']
+
+            [[applicationCollection.inputReport.logicalCollection.variableItem]]
+            usageRange = ['Button', 'Button 1', 'Button 8']
+            logicalValueRange = [0, 1]
+
+    [[applicationCollection.outputReport]]
+
+        [[applicationCollection.outputReport.logicalCollection]]
+        usage = ['LED', 'Usage Multi Mode Indicator']
+
+            [[applicationCollection.outputReport.logicalCollection.arrayItem]]
+            usageRange = ['LED', 'Indicator On', 'Indicator Off']
+
+    [[applicationCollection.featureReport]]
+
+        [[applicationCollection.featureReport.logicalCollection]]
+        usage = ['octokeyz', 'Capabilities']
+
+            [[applicationCollection.featureReport.logicalCollection.variableItem]]
+            usage = ['octokeyz', 'With Display']
+            logicalValueRange = [0, 1]
+            reportFlags = ['constant']
+
+    [[applicationCollection.featureReport]]
+
+        [[applicationCollection.featureReport.logicalCollection]]
+        usage = ['octokeyz', 'Display Capabilities']
+
+            [[applicationCollection.featureReport.logicalCollection.variableItem]]
+            usage = ['octokeyz', 'Display Lines']
+            logicalValueRange = [0, 255]
+            reportFlags = ['constant']
+
+            [[applicationCollection.featureReport.logicalCollection.variableItem]]
+            usage = ['octokeyz', 'Display Characters per Line']
+            logicalValueRange = [0, 255]
+            reportFlags = ['constant']
+
+    [[applicationCollection.outputReport]]
+
+        [[applicationCollection.outputReport.logicalCollection]]
+        usage = ['octokeyz', 'Display Data']
+
+            [[applicationCollection.outputReport.logicalCollection.variableItem]]
+            usage = ['octokeyz', 'Line']
+            logicalValueRange = [0, 31]
+
+            [[applicationCollection.outputReport.logicalCollection.paddingItem]]
+            sizeInBits = 3
+
+            [[applicationCollection.outputReport.logicalCollection.arrayItem]]
+            usageRange = ['octokeyz', 'Alignment Left', 'Alignment Center']
+
+            [[applicationCollection.outputReport.logicalCollection.paddingItem]]
+            sizeInBits = 6
+
+            [[applicationCollection.outputReport.logicalCollection.variableItem]]
+            usage = ['octokeyz', 'Line Data']
+            logicalValueRange = [0, 255]
+            count = 21

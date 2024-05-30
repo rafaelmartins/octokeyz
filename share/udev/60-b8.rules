@@ -1,3 +1,0 @@
-# rgm.io b8
-SUBSYSTEMS=="usb", DRIVERS=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="6184", TAG+="uaccess"
-SUBSYSTEMS=="usb", DRIVERS=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05df", ATTRS{manufacturer}=="rgm.io", ATTRS{product}=="b8", TAG+="uaccess"

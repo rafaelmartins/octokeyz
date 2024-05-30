@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2022-2024 Rafael G. Martins <rafael@rafaelmartins.eng.br>
- * SPDX-License-Identifier: CERN-OHL-S-2.0
- */
+// SPDX-FileCopyrightText: 2022-2024 Rafael G. Martins <rafael@rafaelmartins.eng.br>
+// SPDX-License-Identifier: CERN-OHL-S-2.0
 
 ssd1306_pcb_thickness = 1.6;
 ssd1306_pcb_base_height = 2;

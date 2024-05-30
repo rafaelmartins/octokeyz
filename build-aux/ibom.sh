@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-FileCopyrightText: 2024 Rafael G. Martins <rafael@rafaelmartins.eng.br>
+# SPDX-License-Identifier: BSD-3-Clause
 
 set -e
 
@@ -9,7 +11,7 @@ MYTMPDIR="$(mktemp -d)"
 trap 'rm -rf -- "${MYTMPDIR}"' EXIT
 
 if [[ x$CI = xtrue ]]; then
-    sudo add-apt-repository -y ppa:kicad/kicad-7.0-releases
+    sudo add-apt-repository -y ppa:kicad/kicad-8.0-releases
     sudo apt update
     sudo apt install -y --no-install-recommends kicad
 
@@ -29,7 +31,7 @@ function generate() {
         "${ROOTDIR}/pcb/${1}/${1}.kicad_pcb"
 }
 
-generate b8
-generate b8-mega
+generate octokeyz
+generate octokeyz-mega
 
 mv "${MYTMPDIR}"/*.html .
