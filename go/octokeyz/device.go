@@ -58,25 +58,7 @@ const (
 // Enumerate lists the octokeyz USB macropads connected to the computer.
 func Enumerate() ([]*Device, error) {
 	devices, err := usbhid.Enumerate(func(d *usbhid.Device) bool {
-		switch d.VendorId() {
-		case USBVendorId:
-			return d.ProductId() == USBProductId
-
-		case 0x16c0: // old v-usb shared vid
-			if d.ProductId() != 0x05df { // old v-usb shared hid pid
-				return false
-			}
-			if d.Manufacturer() != USBManufacturer {
-				return false
-			}
-			if d.Product() != USBProduct {
-				return false
-			}
-			return true
-
-		default:
-			return false
-		}
+		return d.VendorId() == USBVendorId && d.ProductId() == USBProductId
 	})
 	if err != nil {
 		return nil, err
