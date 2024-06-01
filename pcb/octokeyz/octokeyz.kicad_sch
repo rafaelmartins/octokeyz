@@ -6,8 +6,8 @@
 	(paper "A4")
 	(title_block
 		(title "octokeyz")
-		(date "2024-05-30")
-		(rev "20240530")
+		(date "2024-06-01")
+		(rev "20240601")
 		(comment 3 "Released under CERN Open Hardware Licence Version 2 - Strongly Reciprocal")
 		(comment 4 "Designed by: Rafael G. Martins")
 	)
