@@ -11,7 +11,6 @@
 #include "bootloader.h"
 #include "display.h"
 #include "led.h"
-#include "usb-watchdog.h"
 
 
 void
@@ -38,8 +37,6 @@ usbd_in_cb(uint8_t ept)
 {
     if (ept != 1)
         return;
-
-    usb_watchdog_reset();
 
     uint8_t v[] = {
         1,
@@ -125,14 +122,6 @@ usbd_set_address_hook_cb(uint8_t addr)
 }
 
 
-void
-usb_watchdog_cb(void)
-{
-    led_set_state(LED_OFF);
-    display_clear();
-}
-
-
 int
 main(void)
 {
@@ -155,12 +144,10 @@ main(void)
     display_init();
 
     usbd_init();
-    usb_watchdog_init();
 
     while (true) {
         usbd_task();
         display_task();
-        usb_watchdog_task();
     }
 
     return 0;

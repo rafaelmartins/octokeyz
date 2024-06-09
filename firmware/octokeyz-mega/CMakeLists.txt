@@ -33,8 +33,6 @@ add_executable(octokeyz-mega
     led.c
     led.h
     main.c
-    usb-watchdog.c
-    usb-watchdog.h
 )
 
 target_compile_definitions(usbd-fs-stm32 INTERFACE
