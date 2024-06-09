@@ -4,83 +4,175 @@ name = 'octokeyz'
 
     [[usagePage.usage]]
     id = 1
+    name = 'octokeyz'
+    types = ['CA']
+
+    [[usagePage.usage]]
+    id = 2
     name = 'Capabilities'
     types = ['CL']
 
     [[usagePage.usage]]
-    id = 2
+    id = 3
+    name = 'Keys'
+    types = ['NAry']
+
+    [[usagePage.usage]]
+    id = 16
     name = 'With Display'
     types = ['SF']
 
+[[usagePage]]
+id = 0xff01
+name = 'octokeyz Key'
+
+    [[usagePage.usage]]
+    id = 1
+    name = 'Key 1'
+    types = ['Sel']
+
+    [[usagePage.usage]]
+    id = 2
+    name = 'Key 2'
+    types = ['Sel']
+
+    [[usagePage.usage]]
+    id = 3
+    name = 'Key 3'
+    types = ['Sel']
+
+    [[usagePage.usage]]
+    id = 4
+    name = 'Key 4'
+    types = ['Sel']
+
+    [[usagePage.usage]]
+    id = 5
+    name = 'Key 5'
+    types = ['Sel']
+
+    [[usagePage.usage]]
+    id = 6
+    name = 'Key 6'
+    types = ['Sel']
+
+    [[usagePage.usage]]
+    id = 7
+    name = 'Key 7'
+    types = ['Sel']
+
+    [[usagePage.usage]]
+    id = 8
+    name = 'Key 8'
+    types = ['Sel']
+
+[[usagePage]]
+id = 0xff02
+name = 'octokeyz LED'
+
+    [[usagePage.usage]]
+    id = 1
+    name = 'LED'
+    types = ['UM']
+
+    [[usagePage.usage]]
+    id = 16
+    name = 'LED On'
+    types = ['Sel']
+
     [[usagePage.usage]]
     id = 17
+    name = 'LED Flash'
+    types = ['Sel']
+
+    [[usagePage.usage]]
+    id = 18
+    name = 'LED Slow Blink'
+    types = ['Sel']
+
+    [[usagePage.usage]]
+    id = 19
+    name = 'LED Fast Blink'
+    types = ['Sel']
+
+    [[usagePage.usage]]
+    id = 20
+    name = 'LED Off'
+    types = ['Sel']
+
+[[usagePage]]
+id = 0xff03
+name = 'octokeyz Display'
+
+    [[usagePage.usage]]
+    id = 1
     name = 'Display Capabilities'
     types = ['CL']
 
     [[usagePage.usage]]
-    id = 18
-    name = 'Display Lines'
-    types = ['SV']
-
-    [[usagePage.usage]]
-    id = 19
-    name = 'Display Characters per Line'
-    types = ['SV']
-
-    [[usagePage.usage]]
-    id = 33
+    id = 2
     name = 'Display Data'
     types = ['CL']
 
     [[usagePage.usage]]
-    id = 34
-    name = 'Line'
-    types = ['DV']
-
-    [[usagePage.usage]]
-    id = 35
-    name = 'Line Data'
-    types = ['DV']
-
-    [[usagePage.usage]]
-    id = 49
+    id = 3
     name = 'Alignment'
     types = ['UM']
 
     [[usagePage.usage]]
-    id = 50
+    id = 16
+    name = 'Display Lines'
+    types = ['SV']
+
+    [[usagePage.usage]]
+    id = 17
+    name = 'Display Characters per Line'
+    types = ['SV']
+
+    [[usagePage.usage]]
+    id = 32
+    name = 'Line'
+    types = ['DV']
+
+    [[usagePage.usage]]
+    id = 33
+    name = 'Line Data'
+    types = ['DV']
+
+    [[usagePage.usage]]
+    id = 48
     name = 'Alignment Left'
     types = ['Sel']
 
     [[usagePage.usage]]
-    id = 51
+    id = 49
     name = 'Alignment Right'
     types = ['Sel']
 
     [[usagePage.usage]]
-    id = 52
+    id = 50
     name = 'Alignment Center'
     types = ['Sel']
 
 [[applicationCollection]]
-usage = ['Consumer', 'Consumer Control']
+usage = ['octokeyz', 'octokeyz']
 
     [[applicationCollection.inputReport]]
 
         [[applicationCollection.inputReport.logicalCollection]]
-        usage = ['Consumer', 'Programmable Buttons']
+        usage = ['octokeyz', 'Keys']
 
             [[applicationCollection.inputReport.logicalCollection.variableItem]]
-            usageRange = ['Button', 'Button 1', 'Button 8']
+            usageRange = ['octokeyz Key', 'Key 1', 'Key 8']
             logicalValueRange = [0, 1]
 
     [[applicationCollection.outputReport]]
 
         [[applicationCollection.outputReport.logicalCollection]]
-        usage = ['LED', 'Usage Multi Mode Indicator']
+        usage = ['octokeyz LED', 'LED']
 
             [[applicationCollection.outputReport.logicalCollection.arrayItem]]
-            usageRange = ['LED', 'Indicator On', 'Indicator Off']
+            usageRange = ['octokeyz LED', 'LED On', 'LED Off']
 
     [[applicationCollection.featureReport]]
 
@@ -95,37 +187,37 @@ usage = ['Consumer', 'Consumer Control']
     [[applicationCollection.featureReport]]
 
         [[applicationCollection.featureReport.logicalCollection]]
-        usage = ['octokeyz', 'Display Capabilities']
+        usage = ['octokeyz Display', 'Display Capabilities']
 
             [[applicationCollection.featureReport.logicalCollection.variableItem]]
-            usage = ['octokeyz', 'Display Lines']
+            usage = ['octokeyz Display', 'Display Lines']
             logicalValueRange = [0, 255]
             reportFlags = ['constant']
 
             [[applicationCollection.featureReport.logicalCollection.variableItem]]
-            usage = ['octokeyz', 'Display Characters per Line']
+            usage = ['octokeyz Display', 'Display Characters per Line']
             logicalValueRange = [0, 255]
             reportFlags = ['constant']
 
     [[applicationCollection.outputReport]]
 
         [[applicationCollection.outputReport.logicalCollection]]
-        usage = ['octokeyz', 'Display Data']
+        usage = ['octokeyz Display', 'Display Data']
 
             [[applicationCollection.outputReport.logicalCollection.variableItem]]
-            usage = ['octokeyz', 'Line']
+            usage = ['octokeyz Display', 'Line']
             logicalValueRange = [0, 31]
 
             [[applicationCollection.outputReport.logicalCollection.paddingItem]]
             sizeInBits = 3
 
             [[applicationCollection.outputReport.logicalCollection.arrayItem]]
-            usageRange = ['octokeyz', 'Alignment Left', 'Alignment Center']
+            usageRange = ['octokeyz Display', 'Alignment Left', 'Alignment Center']
 
             [[applicationCollection.outputReport.logicalCollection.paddingItem]]
             sizeInBits = 6
 
             [[applicationCollection.outputReport.logicalCollection.variableItem]]
-            usage = ['octokeyz', 'Line Data']
+            usage = ['octokeyz Display', 'Line Data']
             logicalValueRange = [0, 255]
             count = 21
