@@ -5,10 +5,28 @@
 
 #include <stm32f0xx.h>
 
+#define BOOT_TO_DFU 0xdeadbeef
+
 
 void
 bootloader_entry(void)
 {
+    if ((RCC->CSR & RCC_CSR_SFTRSTF) == 0)
+        return;
+
+    RCC->CSR &= ~RCC_CSR_SFTRSTF;
+
+    if (RTC->BKP0R != BOOT_TO_DFU)
+        return;
+
+    RCC->APB1ENR |= RCC_APB1ENR_PWREN;
+
+    PWR->CR = PWR_CR_DBP;
+    RTC->BKP0R = 0;
+    PWR->CR = 0;
+
+    RCC->APB1ENR &= ~RCC_APB1ENR_PWREN;
+
     if (FLASH->OBR & FLASH_OBR_BOOT_SEL) {
         RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
         GPIOB->MODER &= ~GPIO_MODER_MODER8;
@@ -29,4 +47,17 @@ bootloader_entry(void)
     void (*bootloader)(void) = (void (*)(void)) bootloader_address;
     bootloader();
     while(1);
+}
+
+
+void
+bootloader_reset(void)
+{
+    RCC->APB1ENR |= RCC_APB1ENR_PWREN;
+
+    PWR->CR = PWR_CR_DBP;
+    RTC->BKP0R = BOOT_TO_DFU;
+    PWR->CR = 0;
+
+    NVIC_SystemReset();
 }

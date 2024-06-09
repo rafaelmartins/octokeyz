@@ -4,3 +4,4 @@
 #pragma once
 
 void bootloader_entry(void);
+void bootloader_reset(void);

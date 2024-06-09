@@ -12,6 +12,8 @@
 #include "display.h"
 #include "led.h"
 
+#define BOOTLOADER_COMBO (GPIO_IDR_1 | GPIO_IDR_2 | GPIO_IDR_4 | GPIO_IDR_5)
+
 
 void
 clock_init(void)
@@ -125,6 +127,8 @@ usbd_set_address_hook_cb(uint8_t addr)
 int
 main(void)
 {
+    bootloader_entry();
+
     RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
 
     GPIOA->PUPDR |=
@@ -132,12 +136,8 @@ main(void)
         GPIO_PUPDR_PUPDR3_0 | GPIO_PUPDR_PUPDR4_0 | GPIO_PUPDR_PUPDR5_0 |
         GPIO_PUPDR_PUPDR6_0 | GPIO_PUPDR_PUPDR7_0;
 
-    if ((RCC->CSR & RCC_CSR_SFTRSTF) != 0) {
-        RCC->CSR &= ~RCC_CSR_SFTRSTF;
-        bootloader_entry();
-    }
-    if ((uint8_t) GPIOA->IDR == (uint8_t) ~(GPIO_IDR_1 | GPIO_IDR_2 | GPIO_IDR_4 | GPIO_IDR_5))
-        NVIC_SystemReset();
+    if ((uint8_t) GPIOA->IDR == (uint8_t) ~BOOTLOADER_COMBO)
+        bootloader_reset();
 
     clock_init();
     led_init();
