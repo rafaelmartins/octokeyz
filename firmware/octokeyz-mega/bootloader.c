@@ -12,7 +12,7 @@ bootloader_entry(void)
     if (FLASH->OBR & FLASH_OBR_BOOT_SEL) {
         RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
         GPIOB->MODER &= ~GPIO_MODER_MODER8;
-        if ((GPIOB->IDR & (GPIO_IDR_8)) != 0)
+        if ((GPIOB->IDR & GPIO_IDR_8) != 0)
             return;
         GPIOB->MODER |= GPIO_MODER_MODER8_0;
         GPIOB->BSRR = GPIO_BSRR_BS_8;
