@@ -157,6 +157,8 @@ func (d *Device) Close() error {
 		return fmt.Errorf("octokeyz: %w", ErrDeviceNotFound)
 	}
 
+	d.DisplayClear()
+	d.Led(LedOff)
 	return d.dev.Close()
 }
 
