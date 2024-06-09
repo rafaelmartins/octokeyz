@@ -8,6 +8,7 @@
 #include <usbd.h>
 #include <usb-std-hid.h>
 
+#include "bootloader.h"
 #include "display.h"
 #include "led.h"
 #include "usb-watchdog.h"
@@ -135,16 +136,23 @@ usb_watchdog_cb(void)
 int
 main(void)
 {
-    clock_init();
-    led_init();
-    display_init();
-
     RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
 
     GPIOA->PUPDR |=
         GPIO_PUPDR_PUPDR0_0 | GPIO_PUPDR_PUPDR1_0 | GPIO_PUPDR_PUPDR2_0 |
         GPIO_PUPDR_PUPDR3_0 | GPIO_PUPDR_PUPDR4_0 | GPIO_PUPDR_PUPDR5_0 |
         GPIO_PUPDR_PUPDR6_0 | GPIO_PUPDR_PUPDR7_0;
+
+    if ((RCC->CSR & RCC_CSR_SFTRSTF) != 0) {
+        RCC->CSR &= ~RCC_CSR_SFTRSTF;
+        bootloader_entry();
+    }
+    if ((uint8_t) GPIOA->IDR == (uint8_t) ~(GPIO_IDR_1 | GPIO_IDR_2 | GPIO_IDR_4 | GPIO_IDR_5))
+        NVIC_SystemReset();
+
+    clock_init();
+    led_init();
+    display_init();
 
     usbd_init();
     usb_watchdog_init();

@@ -24,6 +24,8 @@ include(${cmake_stm32f0_cmsis_SOURCE_DIR}/cmake/stm32f0-cmsis.cmake)
 project(octokeyz-mega C ASM)
 
 add_executable(octokeyz-mega
+    bootloader.c
+    bootloader.h
     descriptors.c
     display.c
     display.h
