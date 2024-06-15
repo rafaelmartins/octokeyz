@@ -50,11 +50,11 @@ difference() {
                                    j * switches_pcb_base_distance_y, 0])
                             cylinder(h=switches_pcb_base_height, d=pcb_base_screw_d, $fn=20);
 
-         translate([key0_x, key0_y, 0])
+         translate([switch0_x, switch0_y, 0])
              for (i=[0:3])
                  for (j=[0:1])
-                     translate([i * key_distance, j * key_distance, 0])
-                        cube([key_dim, key_dim, thickness]);
+                     translate([i * switch_distance, j * switch_distance, 0])
+                        cube([switch_dim, switch_dim, thickness]);
     }
 
     translate([(thickness - gap) / 2, thickness, thickness / 2])

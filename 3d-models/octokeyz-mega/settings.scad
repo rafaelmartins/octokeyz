@@ -61,10 +61,10 @@ led0_x = 37.211;
 led0_y = 15.24;
 led_d = 3.2;
 
-key_dim = 16;
-key_distance = 19.304;
-key0_x = 13.335 - key_dim / 2;
-key0_y = key0_x;
+switch_dim = 16;
+switch_distance = 19.304;
+switch0_x = 13.335 - switch_dim / 2;
+switch0_y = switch0_x;
 
 base_screw_d = 1.8;
 base_screw_h = 5;
