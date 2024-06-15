@@ -12,7 +12,7 @@
 #include "display.h"
 #include "led.h"
 
-#define BOOTLOADER_COMBO (GPIO_IDR_1 | GPIO_IDR_2 | GPIO_IDR_4 | GPIO_IDR_5)
+#define BOOTLOADER_COMBO (GPIO_IDR_0 | GPIO_IDR_4)
 
 static bool display_available = false;
 
