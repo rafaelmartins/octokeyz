@@ -14,6 +14,8 @@
 
 #define BOOTLOADER_COMBO (GPIO_IDR_1 | GPIO_IDR_2 | GPIO_IDR_4 | GPIO_IDR_5)
 
+static bool display_available = false;
+
 
 void
 clock_init(void)
@@ -82,7 +84,10 @@ usbd_ctrl_request_handle_class_cb(usb_ctrl_request_t *req)
         switch ((uint8_t) (req->wValue)) {
         case 1:
             {
-                uint8_t data[] = {1, (1 << 0)};
+                uint8_t data[] = {
+                    1,
+                    display_available ? (1 << 0) : 0,
+                };
                 usbd_control_in(data, sizeof(data), req->wLength);
                 return true;
             }
@@ -90,7 +95,11 @@ usbd_ctrl_request_handle_class_cb(usb_ctrl_request_t *req)
 
         case 2:
             {
-                uint8_t data[] = {2, 8, 21};
+                uint8_t data[] = {
+                    2,
+                    display_available ? display_lines : 0,
+                    display_available ? display_chars_per_line: 0,
+                };
                 usbd_control_in(data, sizeof(data), req->wLength);
                 return true;
             }
@@ -141,7 +150,7 @@ main(void)
 
     clock_init();
     led_init();
-    display_init();
+    display_available = display_init();
 
     usbd_init();
 

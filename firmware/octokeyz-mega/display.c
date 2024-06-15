@@ -8,13 +8,6 @@
 #include <stm32f0xx.h>
 
 #include "display.h"
-#include "display-font.h"
-
-#define display_address 0x3c
-#define display_screen_width 128
-#define display_screen_height 64
-#define display_chars_per_line (display_screen_width / (display_font_width + 1))
-#define display_lines (display_screen_height / 8)  // info from ssd1306 datasheet
 
 // ensure that our assumptions are correct
 static_assert(display_chars_per_line == 21);
@@ -90,7 +83,7 @@ static struct {
 #undef _line
 
 
-void
+bool
 display_init(void)
 {
     RCC->AHBENR |=  RCC_AHBENR_DMA1EN | RCC_AHBENR_GPIOAEN;
@@ -102,10 +95,30 @@ display_init(void)
     GPIOA->MODER |= (GPIO_MODER_MODER9_1 | GPIO_MODER_MODER10_1);
 
     I2C1->TIMINGR = 0x00200C1E;  // ~1MHz
+    I2C1->CR1 = I2C_CR1_PE;
+    I2C1->CR2 = (display_address << 1) | I2C_CR2_START | I2C_CR2_AUTOEND;
+
+    bool stop = false;
+    uint16_t cnt = 0xffff;
+    while (cnt > 0) {
+        if ((I2C1->ISR & I2C_ISR_NACKF) != 0)
+            break;
+
+        if ((I2C1->ISR & I2C_ISR_STOPF) != 0) {
+            stop = true;
+            break;
+        }
+    }
+    I2C1->CR1 = 0;
+    if (cnt == 0 || !stop)
+        return false;
+
     I2C1->CR1 = I2C_CR1_TXDMAEN | I2C_CR1_PE;
 
     DMA1_Channel2->CPAR = (uint32_t) &(I2C1->TXDR);
     DMA1_Channel2->CCR = DMA_CCR_DIR | DMA_CCR_PL | DMA_CCR_MINC | DMA_CCR_TCIE;
+
+    return true;
 }
 
 
@@ -143,6 +156,9 @@ display_line(uint8_t line, const char *str, display_halign_t align)
 {
     if (str == NULL || line >= display_lines)
         return false;
+
+    if ((I2C1->CR1 & I2C_CR1_TXDMAEN) != I2C_CR1_TXDMAEN)
+        return true;
 
     uint8_t start = 0;
     uint8_t len = safe_strlen(str);
@@ -292,6 +308,9 @@ task_stop(void)
 void
 display_task(void)
 {
+    if ((I2C1->CR1 & I2C_CR1_TXDMAEN) != I2C_CR1_TXDMAEN)
+        return;
+
     static bool dma_free = true;
 
     if (((DMA1->ISR & DMA_ISR_TCIF2) == DMA_ISR_TCIF2) && ((I2C1->ISR & I2C_ISR_STOPF) == I2C_ISR_STOPF)) {
