@@ -1,6 +1,4 @@
 {
-    "cmake.sourceDirectory": [
-        "${workspaceFolder}/firmware/octokeyz",
-        "${workspaceFolder}/firmware/octokeyz-mega"
-    ]
+    "cmake.sourceDirectory": "${workspaceFolder}/firmware",
+    "cmake.buildDirectory": "${workspaceFolder}/firmware/build",
 }
