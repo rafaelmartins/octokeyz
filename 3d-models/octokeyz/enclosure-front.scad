@@ -4,8 +4,6 @@
 include <../lib/screw-base.scad>
 include <settings.scad>
 
-keycap_model = "B32-13XX";  // supports "B32-13XX" (square) and "B32-16XX" (circle), both from OSRAM
-
 difference() {
     union() {
         cube([width, length, thickness]);
@@ -41,15 +39,10 @@ difference() {
             }
         }
 
-        for (i=[0:3])
-            for (j=[0:1])
-                if (keycap_model == "B32-13XX")
-                    translate([button0_x - button_dim / 2 + i * button_distance,
-                               button0_y - button_dim / 2 + j * button_distance, 0])
-                        cube([button_dim, button_dim, thickness]);
-                else
-                    translate([button0_x + i * button_distance, button0_y + j * button_distance, 0])
-                        cylinder(thickness, d=button_d, $fn=20);
+        for(i=[0:3])
+            for(j=[0:1])
+                translate([button0_x + i * button_distance, button0_y + j * button_distance, 0])
+                    cylinder(thickness, d=button_d, $fn=20);
 
         translate([led_x, led_y, 0])
             cylinder(thickness, d=led_d, $fn=20);

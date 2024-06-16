@@ -28,7 +28,6 @@ usb_distance_z = thickness + pcb_screw_base_height + 1.6 - 0.1;
 button0_x = 8.763;
 button0_y = 6.985;
 button_d = 10;
-button_dim = 12.5;
 button_distance = 22.352;
 
 led_width = 1.8;
