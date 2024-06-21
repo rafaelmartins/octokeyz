@@ -13,9 +13,9 @@ A simple USB macropad with 8 programmable buttons.
 - [x] I want the client library to support at least Linux and Windows.
 
 > [!NOTE]
-> After using the original [`octokeyz`](#octokeyz) macropad for a few months I realized that having a small OLED screen added to the macropad could be very useful. This new addition required using a more powerful microcontroller (I picked the [`STM32F042K6`](https://www.st.com/en/microcontrollers-microprocessors/stm32f042k6.html)/[`STM32F042K4`](https://www.st.com/en/microcontrollers-microprocessors/stm32f042k4.html), which is not PTH, but still quite easy to hand-solder).
+> After using the original `octokeyz` macropad for a few months I realized that having a small OLED screen added to it could be very useful. This new addition required using a more powerful microcontroller (I picked the [`STM32F042K6`](https://www.st.com/en/microcontrollers-microprocessors/stm32f042k6.html)/[`STM32F042K4`](https://www.st.com/en/microcontrollers-microprocessors/stm32f042k4.html), which is not PTH, but still quite easy to hand-solder).
 >
-> These additions resulted in a new `octokeyz` macropad variant named [`octokeyz-mega`](#octokeyz-mega). This new variant also includes support for 5-pin mechanical keyboard switches instead of the simpler 12mm SPST push-buttons used in the original variant.
+> These additions resulted in a new `octokeyz` macropad variant named `octokeyz-mega`, that also includes support for 5-pin mechanical keyboard switches instead of the simpler 12mm SPST push-buttons used in the original variant.
 >
 > Given the low price of the STM32 microcontrollers nowadays, and to simplify the project maintenance, I ended up converting the original `octokeyz` variant to also use the [`STM32F042K6`](https://www.st.com/en/microcontrollers-microprocessors/stm32f042k6.html)/[`STM32F042K4`](https://www.st.com/en/microcontrollers-microprocessors/stm32f042k4.html) parts. This way we can deploy the same DFU-capable firmware to any of the board variants.
 
@@ -44,7 +44,7 @@ A simple USB macropad with 8 programmable buttons.
 
 ### octokeyz
 
-- [Schematics](./pcb/octokeyz-mega/octokeyz.pdf)
+- [Schematics](./pcb/octokeyz/octokeyz.pdf)
 - [Interactive Bill of Materials](https://rafaelmartins.github.io/octokeyz/ibom/octokeyz.html)
 - [Kicad sources](./pcb/octokeyz/)
 - [Enclosure 3D models](./3d-models/octokeyz/)
