@@ -21,9 +21,9 @@ FetchContent_MakeAvailable(
 
 include(${cmake_stm32f0_cmsis_SOURCE_DIR}/cmake/stm32f0-cmsis.cmake)
 
-project(octokeyz-mega C ASM)
+project(octokeyz C ASM)
 
-add_executable(octokeyz-mega
+add_executable(octokeyz
     bootloader.c
     bootloader.h
     descriptors.c
@@ -41,25 +41,25 @@ target_compile_definitions(usbd-fs-stm32 INTERFACE
     USBD_EP1_TYPE=INTERRUPT
 )
 
-target_link_libraries(octokeyz-mega PRIVATE
+target_link_libraries(octokeyz PRIVATE
     usbd-fs-stm32
 )
 
-target_compile_options(octokeyz-mega PRIVATE
+target_compile_options(octokeyz PRIVATE
     -Wall
     -Wextra
     -Werror
 )
 
-set_property(TARGET octokeyz-mega
+set_property(TARGET octokeyz
     PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE
 )
 
-stm32f0_target_set_mcu(octokeyz-mega stm32f042k6)
-stm32f0_target_generate_map(octokeyz-mega)
-stm32f0_target_generate_ihex(octokeyz-mega)
-stm32f0_target_generate_dfu(octokeyz-mega)
-stm32f0_target_show_size(octokeyz-mega)
-stm32f0_target_set_linker_script(octokeyz-mega ${CMAKE_CURRENT_SOURCE_DIR}/STM32F042K6Tx_FLASH.ld)
-stm32f0_target_stlink_write(octokeyz-mega)
+stm32f0_target_set_mcu(octokeyz stm32f042k6)
+stm32f0_target_generate_map(octokeyz)
+stm32f0_target_generate_ihex(octokeyz)
+stm32f0_target_generate_dfu(octokeyz)
+stm32f0_target_show_size(octokeyz)
+stm32f0_target_set_linker_script(octokeyz ${CMAKE_CURRENT_SOURCE_DIR}/STM32F042K6Tx_FLASH.ld)
+stm32f0_target_stlink_write(octokeyz)
 stm32f0_add_stlink_targets()
