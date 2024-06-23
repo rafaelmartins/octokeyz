@@ -39,14 +39,22 @@ bootloader_entry(void)
     RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
     SYSCFG->CFGR1 = SYSCFG_CFGR1_MEM_MODE_0;
 
-    uint32_t bootloader_stack_pointer = *(uint32_t*)(0x1FFFC400UL);
-    uint32_t bootloader_address = *(uint32_t*)(0x1FFFC404UL);
+    __IO uint32_t bootloader_stack_pointer = *(uint32_t*) 0x1FFFC400UL;
+    __IO uint32_t bootloader_address = *(uint32_t*) 0x1FFFC404UL;
 
-    __set_MSP(bootloader_stack_pointer);
+    // avoid using __setMSP() and jump to bootloader in C because gcc tends to
+    // generate code that stores the bootloader address in the stack pointer
+    // instead of a normal register when building with -O3. gcc can't identify
+    // that we changed the stack pointer and loads an invalid address when
+    // trying to jump to bootloader.
+    __ASM volatile (
+        "MSR msp, %0\r\n"
+        "BLX %1\r\n"
+        :: "r" (bootloader_stack_pointer), "r" (bootloader_address)
+    );
 
-    void (*bootloader)(void) = (void (*)(void)) bootloader_address;
-    bootloader();
-    while(1);
+    while (true)
+        __NOP();
 }
 
 

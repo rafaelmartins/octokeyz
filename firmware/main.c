@@ -145,6 +145,9 @@ main(void)
         GPIO_PUPDR_PUPDR3_0 | GPIO_PUPDR_PUPDR4_0 | GPIO_PUPDR_PUPDR5_0 |
         GPIO_PUPDR_PUPDR6_0 | GPIO_PUPDR_PUPDR7_0;
 
+    // wait a little bit until the pull-ups are stable.
+    for (__IO uint16_t i = 0xffff; i; i--);
+
     if ((uint8_t) GPIOA->IDR == (uint8_t) ~BOOTLOADER_COMBO)
         bootloader_reset();
 
