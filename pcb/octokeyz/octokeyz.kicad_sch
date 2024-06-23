@@ -6076,24 +6076,23 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "04d5d099-4b18-4dce-9f18-39ea822751a9")
 		(property "Reference" "U3"
-			(at 171.7391 119.38 0)
+			(at 163.83 121.285 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 			)
 		)
-		(property "Value" "STM32F042K6T6"
-			(at 171.7391 121.92 0)
+		(property "Value" "STM32F042K4T6 or STM32F042K6T6"
+			(at 163.83 123.825 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 			)
 		)
 		(property "Footprint" "Package_QFP:LQFP-32_7x7mm_P0.8mm"
