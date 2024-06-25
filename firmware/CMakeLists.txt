@@ -29,6 +29,10 @@ target_compile_options(octokeyz PRIVATE
     -Werror
 )
 
+target_compile_definitions(octokeyz PRIVATE
+    OCTOKEYZ_VERSION=\"${OCTOKEYZ_VERSION}\"
+)
+
 set_property(TARGET octokeyz
     PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE
 )
