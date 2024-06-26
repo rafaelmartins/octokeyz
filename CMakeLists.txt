@@ -71,9 +71,42 @@ project(octokeyz
     LANGUAGES C ASM
 )
 
-add_subdirectory(firmware)
+find_program(GENERATE_INTERACTIVE_BOM
+    generate_interactive_bom.py
+    HINTS ${CMAKE_SOURCE_DIR}/../InteractiveHtmlBom/InteractiveHtmlBom
+)
+
+if(GENERATE_INTERACTIVE_BOM)
+    add_custom_target(ibom ALL)
+endif()
 
 foreach(variant octokeyz octokeyz-mega)
+    if(GENERATE_INTERACTIVE_BOM)
+        add_custom_command(
+            OUTPUT ibom/${variant}.html
+            DEPENDS "${CMAKE_SOURCE_DIR}/pcb/${variant}/${variant}.kicad_pcb"
+            COMMAND
+                generate_interactive_bom.py
+                    --no-browser
+                    --dest-dir "${CMAKE_BINARY_DIR}/ibom"
+                    --name-format "%f"
+                    --include-tracks
+                    --include-nets
+                    --blacklist "H*"
+                    "${CMAKE_SOURCE_DIR}/pcb/${variant}/${variant}.kicad_pcb"
+        )
+        add_custom_target(ibom-${variant}
+            DEPENDS ibom/${variant}.html
+        )
+        install(FILES
+            ${CMAKE_BINARY_DIR}/ibom/${variant}.html
+            DESTINATION share/pcb/${variant}
+        )
+        add_dependencies(ibom
+            ibom-${variant}
+        )
+    endif()
+
     file(GLOB gerber pcb/${variant}/gerber/${variant}_rev*.zip)
     install(FILES
         pcb/${variant}/${variant}.pdf
@@ -94,6 +127,8 @@ install(DIRECTORY
     DESTINATION share
 )
 
+add_subdirectory(firmware)
+
 set(CPACK_VERBATIM_VARIABLES YES)
 
 set(CPACK_GENERATOR "TXZ" "ZIP")
@@ -103,8 +138,8 @@ set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${OCTOKEYZ_VERSION}")
 set(CPACK_PACKAGE_CHECKSUM SHA512)
 
 set(CPACK_INSTALL_SCRIPTS
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cpack/install_license_and_readme.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cpack/install_version.cmake"
+    "${CMAKE_SOURCE_DIR}/cmake/cpack/install_license_and_readme.cmake"
+    "${CMAKE_SOURCE_DIR}/cmake/cpack/install_version.cmake"
 )
 
 set(CPACK_SOURCE_GENERATOR "TXZ" "ZIP")
