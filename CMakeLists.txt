@@ -8,7 +8,7 @@ include(FetchContent)
 
 FetchContent_Declare(cmake_stm32f0_cmsis
     GIT_REPOSITORY https://github.com/rafaelmartins/cmake-stm32f0-cmsis.git
-    GIT_TAG f06fa52e39518ef5733fc333385535cbdf962399
+    GIT_TAG bcc691339890cdbfc686cff275b1db412b954076
 )
 FetchContent_Declare(usbd_fs_stm32
     GIT_REPOSITORY https://github.com/rafaelmartins/usbd-fs-stm32.git
