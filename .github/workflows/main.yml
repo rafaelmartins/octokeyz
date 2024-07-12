@@ -1,0 +1,158 @@
+name: Main
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: main
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  XPACK_ARM_TOOLCHAIN_VERSION: "13.2.1-1.1"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: octokeyz
+          fetch-depth: 0
+
+      - uses: actions/checkout@v4
+        with:
+          repository: rafaelmartins/dfu-util
+          ref: v0.11
+          path: dfu-util
+
+      - uses: actions/checkout@v4
+        with:
+          repository: openscopeproject/InteractiveHtmlBom
+          ref: v2.9.0
+          path: InteractiveHtmlBom
+
+      - name: Install arm-none-eabi toolchain
+        run: |
+          wget \
+            "https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v${XPACK_ARM_TOOLCHAIN_VERSION}/xpack-arm-none-eabi-gcc-${XPACK_ARM_TOOLCHAIN_VERSION}-linux-x64.tar.gz"{,.sha}
+
+          sha256sum \
+            --check \
+            "xpack-arm-none-eabi-gcc-${XPACK_ARM_TOOLCHAIN_VERSION}-linux-x64.tar.gz.sha"
+
+          tar \
+            --extract \
+            --verbose \
+            --file="xpack-arm-none-eabi-gcc-${XPACK_ARM_TOOLCHAIN_VERSION}-linux-x64.tar.gz"
+
+          echo "${{ github.workspace }}/dfu-util" >> $GITHUB_PATH
+          echo "${{ github.workspace }}/xpack-arm-none-eabi-gcc-${XPACK_ARM_TOOLCHAIN_VERSION}/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: |
+          sudo add-apt-repository -y ppa:kicad/kicad-8.0-releases
+          sudo apt update
+          sudo apt install -y --no-install-recommends kicad ninja-build python3-intelhex
+
+      - name: Build
+        run: |
+          cmake \
+            -B ${{ github.workspace }}/build \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D GENERATE_IBOM=ON \
+            -S ${{ github.workspace }}/octokeyz \
+            -G Ninja
+
+          cmake \
+            --build ${{ github.workspace }}/build \
+            --target package \
+            --target package_source
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ibom
+          path: build/pcb/*.html
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: build/octokeyz-*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: readme
+          path: build/cmake/cpack/files/README.txt
+
+  website:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ibom
+          path: prefix/ibom
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: prefix
+
+  deploy-website:
+    runs-on: ubuntu-latest
+    needs:
+      - website
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/deploy-pages@v4
+
+  release:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    needs:
+      - website
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: readme
+          path: readme
+
+      - name: Get release metadata
+        id: meta
+        run: |
+          version="$(echo "${{ github.ref }}" | sed 's,refs/tags/v,,')"
+          echo "name=$(git tag -l --format="%(contents:subject)" "v${version}")" >> $GITHUB_OUTPUT
+          git tag -l --format="%(contents:body)" "v${version}" > body.md
+          echo >> body.md
+          echo "## README" >> body.md
+          echo >> body.md
+          echo "\`\`\`" >> body.md
+          cat readme/README.txt >> body.md
+          echo "\`\`\`" >> body.md
+
+      - uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5
+        with:
+          name: ${{ steps.meta.outputs.name }}
+          artifacts: dist/octokeyz-*
+          bodyFile: body.md
+          generateReleaseNotes: true
