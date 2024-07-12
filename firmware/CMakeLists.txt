@@ -37,21 +37,12 @@ set_property(TARGET octokeyz
     PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE
 )
 
-stm32f0_target_set_mcu(octokeyz stm32f042k6)
-stm32f0_target_generate_map(octokeyz)
-stm32f0_target_generate_bin(octokeyz)
-stm32f0_target_generate_ihex(octokeyz)
-stm32f0_target_generate_dfu(octokeyz)
-stm32f0_target_show_size(octokeyz)
-stm32f0_target_set_linker_script(octokeyz ${CMAKE_CURRENT_SOURCE_DIR}/STM32F042KxTx_FLASH.ld)
-stm32f0_target_stlink_write(octokeyz)
-stm32f0_add_stlink_targets()
-
-install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/octokeyz.elf
-    ${CMAKE_CURRENT_BINARY_DIR}/octokeyz.elf.map
-    ${CMAKE_CURRENT_BINARY_DIR}/octokeyz.bin
-    ${CMAKE_CURRENT_BINARY_DIR}/octokeyz.hex
-    ${CMAKE_CURRENT_BINARY_DIR}/octokeyz.dfu
-    TYPE BIN
+cmsis_stm32_target(octokeyz
+    DEVICE STM32F042x6
+    VERSION 20240709193138
+    LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/STM32F042KxTx_FLASH.ld
+    ADDITIONAL_OUTPUTS BIN MAP IHEX DFU
+    SHOW_SIZE ON
+    STLINK ON
+    INSTALL ON
 )

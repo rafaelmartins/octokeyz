@@ -6,20 +6,18 @@ cmake_minimum_required(VERSION 3.22)
 set(FETCHCONTENT_QUIET NO)
 include(FetchContent)
 
-FetchContent_Declare(cmake_stm32f0_cmsis
-    GIT_REPOSITORY https://github.com/rafaelmartins/cmake-stm32f0-cmsis.git
-    GIT_TAG bcc691339890cdbfc686cff275b1db412b954076
+FetchContent_Declare(cmake_cmsis_stm32
+    GIT_REPOSITORY https://github.com/rafaelmartins/cmake-cmsis-stm32.git
+    GIT_TAG fe2a4affff8c36d431faf5f9890bac811a1578da
 )
 FetchContent_Declare(usbd_fs_stm32
     GIT_REPOSITORY https://github.com/rafaelmartins/usbd-fs-stm32.git
-    GIT_TAG 39c612119d527b7db4efcd5964440e6a906f20c5
+    GIT_TAG 94db86e1b47dd830fab0ea736d006a0b3723189d
 )
 FetchContent_MakeAvailable(
-    cmake_stm32f0_cmsis
+    cmake_cmsis_stm32
     usbd_fs_stm32
 )
-
-include(${cmake_stm32f0_cmsis_SOURCE_DIR}/cmake/stm32f0-cmsis.cmake)
 
 find_package(Git)
 
