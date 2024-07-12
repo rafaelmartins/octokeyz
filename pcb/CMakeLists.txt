@@ -17,7 +17,10 @@ foreach(variant octokeyz octokeyz-mega)
             OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${variant}.html
             DEPENDS "${CMAKE_SOURCE_DIR}/pcb/${variant}/${variant}.kicad_pcb"
             COMMAND
-                ${GIB}
+                "${CMAKE_COMMAND}"
+                    -E env
+                    INTERACTIVE_HTML_BOM_NO_DISPLAY=1
+                "${GIB}"
                     --no-browser
                     --dest-dir "${CMAKE_CURRENT_BINARY_DIR}"
                     --name-format "%f"
@@ -27,10 +30,10 @@ foreach(variant octokeyz octokeyz-mega)
                     "${CMAKE_CURRENT_SOURCE_DIR}/${variant}/${variant}.kicad_pcb"
         )
         add_custom_target(ibom-${variant}
-            DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${variant}.html
+            DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${variant}.html"
         )
         install(FILES
-            ${CMAKE_CURRENT_BINARY_DIR}/${variant}.html
+            "${CMAKE_CURRENT_BINARY_DIR}/${variant}.html"
             DESTINATION share/pcb/${variant}
         )
         add_dependencies(ibom
