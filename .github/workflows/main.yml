@@ -26,6 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          path: octokeyz
           fetch-depth: 0
 
       - uses: actions/checkout@v4
@@ -76,7 +77,7 @@ jobs:
           cmake \
             -B ${{ github.workspace }}/build \
             -DGENERATE_IBOM=ON \
-            -S ${{ github.workspace }} \
+            -S ${{ github.workspace }}/octokeyz \
             -G Ninja
 
           cmake \
