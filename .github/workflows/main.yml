@@ -68,13 +68,13 @@ jobs:
         run: |
           cmake \
             -B ${{ github.workspace }}/build \
-            -DGENERATE_IBOM=ON \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D GENERATE_IBOM=ON \
             -S ${{ github.workspace }}/octokeyz \
             -G Ninja
 
           cmake \
             --build ${{ github.workspace }}/build \
-            --config Release \
             --target package \
             --target package_source
 
