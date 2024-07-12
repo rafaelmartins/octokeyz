@@ -118,7 +118,7 @@ usbd_reset_hook_cb(bool before)
         led_set_state(LED_ON);
         display_clear();
         display_line(1, "octokeyz", DISPLAY_HALIGN_CENTER);
-        display_line(3, OCTOKEYZ_VERSION, DISPLAY_HALIGN_CENTER);
+        display_line(3, PACKAGE_VERSION, DISPLAY_HALIGN_CENTER);
         display_line(6, "Waiting for USB ...", DISPLAY_HALIGN_CENTER);
     }
 }

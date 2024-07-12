@@ -19,52 +19,10 @@ FetchContent_MakeAvailable(
     usbd_fs_stm32
 )
 
-find_package(Git)
-
-if (EXISTS "${CMAKE_SOURCE_DIR}/version.cmake")
-    include("${CMAKE_SOURCE_DIR}/version.cmake")
-elseif(EXISTS "${CMAKE_SOURCE_DIR}/.git" AND Git_FOUND)
-    execute_process(
-        COMMAND ${GIT_EXECUTABLE} describe --abbrev=4 HEAD
-        OUTPUT_VARIABLE _octokeyz_version
-        ERROR_VARIABLE _octokeyz_version_err
-        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-        RESULT_VARIABLE _octokeyz_version_result
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-    if(_octokeyz_version_err)
-        message(FATAL_ERROR "Failed to find version from Git\n${_octokeyz_version_err}")
-    endif()
-
-    if(NOT _octokeyz_version_result EQUAL 0)
-        message(FATAL_ERROR "Failed to find version from Git. Git process returned ${_octokeyz_version_result}")
-    endif()
-
-    string(REGEX REPLACE "^v" "" _octokeyz_version "${_octokeyz_version}")
-    string(REGEX REPLACE "^([^-]*)-(.*)" "\\1.\\2" _octokeyz_version "${_octokeyz_version}")
-    string(REGEX REPLACE "-g" "-" OCTOKEYZ_VERSION "${_octokeyz_version}")
-else()
-    message(FATAL_ERROR "Can't find version information!")
-endif()
-
-string(REGEX MATCHALL "[0-9]+" _octokeyz_version_list "${OCTOKEYZ_VERSION}")
-list(LENGTH _octokeyz_version_list _octokeyz_version_list_len)
-if(NOT _octokeyz_version_list_len GREATER_EQUAL 2)
-    message(FATAL_ERROR "Invalid version: ${OCTOKEYZ_VERSION}")
-endif()
-
-list(GET _octokeyz_version_list 0 _octokeyz_version_major)
-list(GET _octokeyz_version_list 1 _octokeyz_version_minor)
-set(OCTOKEYZ_VERSION_CANONICAL "${_octokeyz_version_major}.${_octokeyz_version_minor}")
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/.git" AND _octokeyz_version_list_len GREATER_EQUAL 3)
-    list(GET _octokeyz_version_list 2 _octokeyz_version_patch)
-    set(OCTOKEYZ_VERSION_CANONICAL "${OCTOKEYZ_VERSION_CANONICAL}.${_octokeyz_version_patch}")
-endif()
+include(cmake/git-version-gen.cmake)
 
 project(octokeyz
-    VERSION "${OCTOKEYZ_VERSION_CANONICAL}"
+    VERSION "${PACKAGE_VERSION_CANONICAL}"
     HOMEPAGE_URL "https://octokeyz.rgm.io/"
     LANGUAGES C ASM
 )
@@ -131,8 +89,8 @@ set(CPACK_VERBATIM_VARIABLES YES)
 
 set(CPACK_GENERATOR "TXZ" "ZIP")
 set(CPACK_PACKAGE_VENDOR "Rafael G. Martins")
-set(CPACK_PACKAGE_VERSION "${OCTOKEYZ_VERSION}")
-set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${OCTOKEYZ_VERSION}")
+set(CPACK_PACKAGE_VERSION "${PACKAGE_VERSION}")
+set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${PACKAGE_VERSION}")
 set(CPACK_PACKAGE_CHECKSUM SHA512)
 
 set(CPACK_INSTALL_SCRIPTS
@@ -141,7 +99,7 @@ set(CPACK_INSTALL_SCRIPTS
 )
 
 set(CPACK_SOURCE_GENERATOR "TXZ" "ZIP")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-source-${OCTOKEYZ_VERSION}")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-source-${PACKAGE_VERSION}")
 set(CPACK_SOURCE_IGNORE_FILES
     \\.git
     \\.gitignore

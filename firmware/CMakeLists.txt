@@ -30,7 +30,7 @@ target_compile_options(octokeyz PRIVATE
 )
 
 target_compile_definitions(octokeyz PRIVATE
-    OCTOKEYZ_VERSION=\"${OCTOKEYZ_VERSION}\"
+    PACKAGE_VERSION=\"${PACKAGE_VERSION}\"
 )
 
 set_property(TARGET octokeyz
