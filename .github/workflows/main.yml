@@ -22,12 +22,18 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           path: octokeyz
           fetch-depth: 0
+
+      - uses: actions/checkout@v4
+        with:
+          repository: rafaelmartins/dfu-util
+          ref: v0.11
+          path: dfu-util
 
       - uses: actions/checkout@v4
         with:
@@ -49,13 +55,14 @@ jobs:
             --verbose \
             --file="xpack-arm-none-eabi-gcc-${XPACK_ARM_TOOLCHAIN_VERSION}-linux-x64.tar.gz"
 
+          echo "${{ github.workspace }}/dfu-util" >> $GITHUB_PATH
           echo "${{ github.workspace }}/xpack-arm-none-eabi-gcc-${XPACK_ARM_TOOLCHAIN_VERSION}/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
         run: |
           sudo add-apt-repository -y ppa:kicad/kicad-8.0-releases
           sudo apt update
-          sudo apt install -y --no-install-recommends dfu-util kicad ninja-build
+          sudo apt install -y --no-install-recommends kicad ninja-build python3-intelhex
 
       - name: Build
         run: |
