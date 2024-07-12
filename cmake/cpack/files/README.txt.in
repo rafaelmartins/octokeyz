@@ -1,0 +1,57 @@
+octokeyz
+========
+
+This is a binary distribution of the octokeyz project. It includes all the
+files required to assemble and program an octokeyz device.
+
+
+There are two hardware variants:
+
+    octokeyz:      Macropad with 8 SPST 12mm switches
+    octokeyz-mega: Macropad with 8 mechanical switches and OLED display
+
+
+This distribution contains the following PCB revisions:
+
+    octokeyz:      @octokeyz_PCB_REVISION@
+    octokeyz-mega: @octokeyz-mega_PCB_REVISION@
+
+
+This distribution contains the following files:
+
+    LICENSE.txt                         => Project licenses
+    README.txt                          => This file
+    bin/                                => Firmware binaries for both variants
+        octokeyz.elf                    => ELF binary as built by GCC
+        octokeys.elf.map                => Linker map file
+        octokeyz.bin                    => Raw binary file
+        octokeyz.dfu                    => DFU binary for dfu-util
+        octokeyz.hex                    => Intel HEX file
+    share/                              => Shared data
+        3d-models/                      => Enclosure 3D models
+            octokeyz/                   => octokeyz enclosure
+                enclosure-back.stl      => Enclosure back part
+                enclosure-front.stl     => Enclosure front part
+                led-holder.stl          => PCB led holder
+            octokeyz-mega/              => octokeyz-mega enclosure
+                base.stl                => Angled base for enclosure
+                enclosure-back.stl      => Enclosure back part
+                enclosure-front.stl     => Enclosure front part
+                led-holder.stl          => PCB led holder
+        images/                         => Images of the assembled devices
+        pcb/                            => Printed Circuit Boards files
+            octokeyz/                   => octokeyz variant PCB
+                octokeyz.pdf            => Schematics
+                octokeyz.html           => Interactive Bill of Materials
+                octokeyz_rev*.zip       => Gerbar files
+            octokeyz-mega/              => octokeyz-mega variant PCB
+                octokeyz-mega.pdf       => Schematics
+                octokeyz-mega.html      => Interactive Bill of Materials
+                octokeyz-mega_rev*.zip  => Gerbar files
+        udev/                           => udev rules for linux
+            60-octokeyz.rules           => allow logged-in users to access
+
+
+For more information and build manual, please visit:
+
+    https://octokeyz.rgm.io/

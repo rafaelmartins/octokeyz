@@ -1,6 +1,16 @@
 # SPDX-FileCopyrightText: 2024 Rafael G. Martins <rafael@rafaelmartins.eng.br>
 # SPDX-License-Identifier: BSD-3-Clause
 
+include(FetchContent)
+
+FetchContent_Declare(usbd_fs_stm32
+    GIT_REPOSITORY https://github.com/rafaelmartins/usbd-fs-stm32.git
+    GIT_TAG 94db86e1b47dd830fab0ea736d006a0b3723189d
+)
+FetchContent_MakeAvailable(
+    usbd_fs_stm32
+)
+
 add_executable(octokeyz
     bootloader.c
     bootloader.h
