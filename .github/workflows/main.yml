@@ -41,7 +41,7 @@ jobs:
 
           sha256sum \
             --check \
-            xpack-arm-none-eabi-gcc-${XPACK_ARM_TOOLCHAIN_VERSION}-linux-x64.tar.gz"{,.sha}
+            "xpack-arm-none-eabi-gcc-${XPACK_ARM_TOOLCHAIN_VERSION}-linux-x64.tar.gz"{,.sha}
 
           tar \
             --extract \
