@@ -29,6 +29,7 @@ add_subdirectory(share)
 configure_file(
     cmake/cpack/files/README.txt.in
     cmake/cpack/files/README.txt
+    @ONLY
 )
 
 install(FILES
@@ -44,10 +45,6 @@ set(CPACK_PACKAGE_VENDOR "Rafael G. Martins")
 set(CPACK_PACKAGE_VERSION "${PACKAGE_VERSION}")
 set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${PACKAGE_VERSION}")
 set(CPACK_PACKAGE_CHECKSUM SHA512)
-
-set(CPACK_INSTALL_SCRIPTS
-    "${CMAKE_SOURCE_DIR}/cmake/cpack/install_version.cmake"
-)
 
 set(CPACK_SOURCE_GENERATOR TXZ ZIP)
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-source-${PACKAGE_VERSION}")
