@@ -7,7 +7,7 @@ include(FetchContent)
 
 FetchContent_Declare(cmake_cmsis_stm32
     GIT_REPOSITORY https://github.com/rafaelmartins/cmake-cmsis-stm32.git
-    GIT_TAG e2c75286a8202bb2b816a1536c2335507b2197ef
+    GIT_TAG 432750e3b364afbc1d4457a35789e857c2dda577
 )
 FetchContent_MakeAvailable(
     cmake_cmsis_stm32
