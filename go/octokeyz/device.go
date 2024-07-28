@@ -28,6 +28,7 @@ var (
 // connected to the computer.
 type Device struct {
 	dev                 *usbhid.Device
+	listen              chan bool
 	buttons             map[ButtonID]*Button
 	data                byte
 	legacyLedState      bool
@@ -127,6 +128,7 @@ func (d *Device) Open() error {
 	if err := d.dev.Open(true); err != nil {
 		return err
 	}
+	d.listen = make(chan bool)
 
 	if buf, err := d.dev.GetFeatureReport(1); err == nil {
 		d.withDisplay = buf[0] == (1 << 0)
@@ -159,6 +161,7 @@ func (d *Device) Close() error {
 
 	d.DisplayClear()
 	d.Led(LedOff)
+	close(d.listen)
 	return d.dev.Close()
 }
 
@@ -192,6 +195,15 @@ func (d *Device) Listen(errCh chan error) error {
 	}
 
 	for {
+		select {
+		case <-d.listen:
+			return nil
+		default:
+			if d.listen == nil {
+				return nil
+			}
+		}
+
 		id, buf, err := d.dev.GetInputReport()
 		if err != nil {
 			return fmt.Errorf("octokeyz: %w: %s", ErrDeviceReadFailed, err)
