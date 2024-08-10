@@ -15,59 +15,55 @@ static_assert(display_lines          == 8);
 static_assert(display_font_width     == 5);
 static_assert(display_font_height    == 7);
 
-#define _line(line)                                 \
-{                                                   \
-    /* render empty lines to clean screen */        \
-    .state = DISPLAY_LINE_STATE_PENDING_COMMANDS,   \
-    .commands = {                                   \
-        /* Co = 0; D/C# = 0 */                      \
-        0x00,                                       \
-        /* set line address */                      \
-        0xB0 | line,                                \
-        /* set column address 4 lower bits */       \
-        0x02,                                       \
-        /* set column address 4 higher bits */      \
-        0x10,                                       \
-    },                                              \
-    .data = {                                       \
-        /* Co = 0; D/C# = 1 */                      \
-        0x40,                                       \
-    },                                              \
-    .with_backlog = false,                          \
+static const uint8_t init_commands[] = {
+    /* send only commands */
+    0x00,
+    /* set segment remap (reverse direction) */
+    0xA1,
+    /* set COM output scan direction (COM[N-1] to COM0) */
+    0xC8,
+    /* charge pump setting (enable during display on) */
+    0x8D, 0x14,
+    /* display on */
+    0xAF,
+};
+
+#define _line_data_init(line)               \
+{                                           \
+    /* set line address */                  \
+    0x80, 0xB0 | line,                      \
+    /* set column address 4 lower bits */   \
+    0x80, 0x02,                             \
+    /* set column address 4 higher bits */  \
+    0x80, 0x10,                             \
+    /* send only data */                    \
+    0x40,                                   \
+}
+static uint8_t line_data_init[] = _line_data_init(0);
+
+#define _line(line)             \
+{                               \
+    .toggle = false,            \
+    .pending = {false, false},  \
+    .data = {                   \
+        _line_data_init(line),  \
+        _line_data_init(line),  \
+    },                          \
 }
 
 static struct {
     bool initialized;
+    bool reset_line;
     uint8_t current_line;
-    const uint8_t commands[6];
     struct {
-        enum {
-            DISPLAY_LINE_STATE_FREE,
-            DISPLAY_LINE_STATE_PENDING_COMMANDS,
-            DISPLAY_LINE_STATE_SENDING_COMMANDS,
-            DISPLAY_LINE_STATE_PENDING_DATA,
-            DISPLAY_LINE_STATE_SENDING_DATA,
-        } state;
-        const uint8_t commands[4];
-        uint8_t data[display_screen_width + 1];
-        uint8_t backlog[display_screen_width];
-        bool with_backlog;
+        bool toggle;
+        bool pending[2];
+        uint8_t data[2][display_screen_width + sizeof(line_data_init)];
     } lines[display_lines];
 } display = {
     .initialized = false,
+    .reset_line = false,
     .current_line = 0,
-    .commands = {
-        /* Co = 0; D/C# = 0 */
-        0x00,
-        /* set segment remap (reverse direction) */
-        0xA1,
-        /* set COM output scan direction (COM[N-1] to COM0) */
-        0xC8,
-        /* charge pump setting (enable during display on) */
-        0x8D, 0x14,
-        /* display on */
-        0xAF,
-    },
     .lines = {
         _line(0),
         _line(1),
@@ -81,6 +77,7 @@ static struct {
 };
 
 #undef _line
+#undef _line_data_init
 
 
 bool
@@ -118,26 +115,8 @@ display_init(void)
     DMA1_Channel2->CPAR = (uint32_t) &(I2C1->TXDR);
     DMA1_Channel2->CCR = DMA_CCR_DIR | DMA_CCR_PL | DMA_CCR_MINC | DMA_CCR_TCIE;
 
+    display_clear();
     return true;
-}
-
-
-static uint8_t*
-get_data_ptr(uint8_t line)
-{
-    switch (display.lines[line].state) {
-    case DISPLAY_LINE_STATE_FREE:
-        display.lines[line].state = DISPLAY_LINE_STATE_PENDING_COMMANDS;
-        // fall through
-
-    case DISPLAY_LINE_STATE_PENDING_COMMANDS:
-        return display.lines[line].data + 1;
-
-    default:
-    }
-
-    display.lines[line].with_backlog = true;
-    return display.lines[line].backlog;
 }
 
 
@@ -176,7 +155,8 @@ display_line(uint8_t line, const char *str, display_halign_t align)
         break;
     }
 
-    uint8_t *buf = get_data_ptr(line);
+    bool toggle = display.lines[line].toggle;
+    uint8_t *buf = display.lines[line].data[toggle] + sizeof(line_data_init);
 
     uint8_t i = 0;
     uint8_t j = 0;
@@ -196,6 +176,9 @@ display_line(uint8_t line, const char *str, display_halign_t align)
         }
     }
 
+    display.lines[line].pending[toggle] = true;
+    if (line == 0)
+        display.reset_line = true;
     return true;
 }
 
@@ -211,97 +194,31 @@ display_line_from_report(uint8_t *buf, uint8_t len)
 
 
 void
-display_clear(void)
+display_clear_line(uint8_t line)
 {
-    for (uint8_t i = 0; i < display_lines; i++)
-        display_line(i, "", DISPLAY_HALIGN_LEFT);
+    bool toggle = display.lines[line].toggle;
+    memset(display.lines[line].data[toggle] + sizeof(line_data_init), 0, display_screen_width);
+    display.lines[line].pending[toggle] = true;
 }
 
 
-static bool
+void
+display_clear(void)
+{
+    for (uint8_t i = 0; i < display_lines; i++)
+        display_clear_line(i);
+}
+
+
+static inline void
 dma_send(const uint8_t *data, uint32_t data_len)
 {
-    if ((DMA1_Channel2->CCR & DMA_CCR_EN) == DMA_CCR_EN)
-        return false;
-
     I2C1->CR2 = (display_address << 1) | (data_len << I2C_CR2_NBYTES_Pos) |
         I2C_CR2_AUTOEND | I2C_CR2_START;
 
     DMA1_Channel2->CMAR = (uint32_t) data;
     DMA1_Channel2->CNDTR = data_len;
     DMA1_Channel2->CCR |= DMA_CCR_EN;
-
-    return true;
-}
-
-
-static bool
-task_start(void)
-{
-    if (!display.initialized) {
-        if (dma_send(display.commands, sizeof(display.commands))) {
-            display.initialized = true;
-            return true;
-        }
-        return false;
-    }
-
-    switch (display.lines[display.current_line].state) {
-    case DISPLAY_LINE_STATE_FREE:
-        if (++display.current_line == display_lines)
-            display.current_line = 0;
-        break;
-
-    case DISPLAY_LINE_STATE_SENDING_COMMANDS:
-    case DISPLAY_LINE_STATE_SENDING_DATA:
-        break;
-
-    case DISPLAY_LINE_STATE_PENDING_COMMANDS:
-        if (dma_send(display.lines[display.current_line].commands,
-            sizeof(display.lines[display.current_line].commands)))
-        {
-            display.lines[display.current_line].state = DISPLAY_LINE_STATE_SENDING_COMMANDS;
-            return true;
-        }
-        break;
-
-    case DISPLAY_LINE_STATE_PENDING_DATA:
-        if (dma_send(display.lines[display.current_line].data,
-            sizeof(display.lines[display.current_line].data)))
-        {
-            display.lines[display.current_line].state = DISPLAY_LINE_STATE_SENDING_DATA;
-            return true;
-        }
-        break;
-    }
-    return false;
-}
-
-
-static void
-task_stop(void)
-{
-    switch (display.lines[display.current_line].state) {
-    case DISPLAY_LINE_STATE_FREE:
-    case DISPLAY_LINE_STATE_PENDING_COMMANDS:
-    case DISPLAY_LINE_STATE_PENDING_DATA:
-        break;
-
-    case DISPLAY_LINE_STATE_SENDING_COMMANDS:
-        display.lines[display.current_line].state = DISPLAY_LINE_STATE_PENDING_DATA;
-        break;
-
-    case DISPLAY_LINE_STATE_SENDING_DATA:
-        display.lines[display.current_line].state = DISPLAY_LINE_STATE_FREE;
-        if (display.lines[display.current_line].with_backlog) {
-            memcpy(display.lines[display.current_line].data + 1,
-                display.lines[display.current_line].backlog, display_screen_width);
-            display.lines[display.current_line].with_backlog = false;
-        }
-        if (++display.current_line == display_lines)
-            display.current_line = 0;
-        break;
-    }
 }
 
 
@@ -311,18 +228,39 @@ display_task(void)
     if ((I2C1->CR1 & I2C_CR1_TXDMAEN) != I2C_CR1_TXDMAEN)
         return;
 
-    static bool dma_free = true;
+    bool toggle = display.lines[display.current_line].toggle;
 
     if (((DMA1->ISR & DMA_ISR_TCIF2) == DMA_ISR_TCIF2) && ((I2C1->ISR & I2C_ISR_STOPF) == I2C_ISR_STOPF)) {
         I2C1->ICR = I2C_ICR_STOPCF;
         DMA1->IFCR = DMA_IFCR_CTCIF2;
         DMA1_Channel2->CCR &= ~DMA_CCR_EN;
 
-        task_stop();
-        dma_free = true;
+        if (!display.initialized)
+            display.initialized = true;
+
+        display.lines[display.current_line].pending[!toggle] = false;
         return;
     }
 
-    if (dma_free && task_start())
-        dma_free = false;
+    if ((DMA1_Channel2->CCR & DMA_CCR_EN) == DMA_CCR_EN)
+        return;
+
+    if (!display.initialized) {
+        dma_send(init_commands, sizeof(init_commands));
+        return;
+    }
+
+    if (display.reset_line) {
+        display.current_line = 0;
+        display.reset_line = false;
+    }
+
+    if (display.lines[display.current_line].pending[toggle]) {
+        display.lines[display.current_line].toggle = !toggle;
+        dma_send(display.lines[display.current_line].data[toggle], sizeof(display.lines[0].data[0]));
+        return;
+    }
+
+    if (++display.current_line == display_lines)
+        display.current_line = 0;
 }

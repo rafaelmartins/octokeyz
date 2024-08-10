@@ -23,5 +23,6 @@ typedef enum {
 bool display_init(void);
 bool display_line(uint8_t line, const char *str, display_halign_t align);
 bool display_line_from_report(uint8_t *buf, uint8_t len);
+void display_clear_line(uint8_t line);
 void display_clear(void);
 void display_task(void);
