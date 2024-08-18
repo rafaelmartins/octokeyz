@@ -120,6 +120,11 @@ name = 'octokeyz Display'
     types = ['UM']
 
     [[usagePage.usage]]
+    id = 4
+    name = 'Display Clear'
+    types = ['CL']
+
+    [[usagePage.usage]]
     id = 16
     name = 'Display Lines'
     types = ['SV']
@@ -128,6 +133,11 @@ name = 'octokeyz Display'
     id = 17
     name = 'Display Characters per Line'
     types = ['SV']
+
+    [[usagePage.usage]]
+    id = 18
+    name = 'With Display Clear'
+    types = ['SF']
 
     [[usagePage.usage]]
     id = 32
@@ -153,6 +163,11 @@ name = 'octokeyz Display'
     id = 50
     name = 'Alignment Center'
     types = ['Sel']
+
+    [[usagePage.usage]]
+    id = 64
+    name = 'Delay Miliseconds'
+    types = ['DV']
 
 [[applicationCollection]]
 usage = ['octokeyz', 'octokeyz']
@@ -199,6 +214,11 @@ usage = ['octokeyz', 'octokeyz']
             logicalValueRange = [0, 255]
             reportFlags = ['constant']
 
+            [[applicationCollection.featureReport.logicalCollection.variableItem]]
+            usage = ['octokeyz Display', 'With Display Clear']
+            logicalValueRange = [0, 1]
+            reportFlags = ['constant']
+
     [[applicationCollection.outputReport]]
 
         [[applicationCollection.outputReport.logicalCollection]]
@@ -221,3 +241,12 @@ usage = ['octokeyz', 'octokeyz']
             usage = ['octokeyz Display', 'Line Data']
             logicalValueRange = [0, 255]
             count = 21
+
+    [[applicationCollection.outputReport]]
+
+        [[applicationCollection.outputReport.logicalCollection]]
+        usage = ['octokeyz Display', 'Display Clear']
+
+            [[applicationCollection.outputReport.logicalCollection.variableItem]]
+            usage = ['octokeyz Display', 'Delay Miliseconds']
+            logicalValueRange = [0, 65535]

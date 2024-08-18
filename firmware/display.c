@@ -115,6 +115,12 @@ display_init(void)
     DMA1_Channel2->CPAR = (uint32_t) &(I2C1->TXDR);
     DMA1_Channel2->CCR = DMA_CCR_DIR | DMA_CCR_PL | DMA_CCR_MINC | DMA_CCR_TCIE;
 
+    RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
+
+    TIM16->CR1 = TIM_CR1_OPM | TIM_CR1_URS;
+    TIM16->DIER = TIM_DIER_UIE;
+    TIM16->PSC = SystemCoreClock / 1000 - 1;
+
     display_clear();
     return true;
 }
@@ -138,6 +144,11 @@ display_line(uint8_t line, const char *str, display_halign_t align)
 
     if ((I2C1->CR1 & I2C_CR1_TXDMAEN) != I2C_CR1_TXDMAEN)
         return true;
+
+    if ((TIM16->CR1 & TIM_CR1_CEN) == TIM_CR1_CEN) {
+        TIM16->CR1 &= ~TIM_CR1_CEN;
+        display_clear();
+    }
 
     uint8_t start = 0;
     uint8_t len = safe_strlen(str);
@@ -210,6 +221,20 @@ display_clear(void)
 }
 
 
+void
+display_clear_with_delay(uint16_t ms)
+{
+    if (ms <= 1) {
+        display_clear();
+        return;
+    }
+
+    TIM16->ARR = ms - 1;
+    TIM16->EGR = TIM_EGR_UG;
+    TIM16->CR1 |= TIM_CR1_CEN;
+}
+
+
 static inline void
 dma_send(const uint8_t *data, uint32_t data_len)
 {
@@ -227,6 +252,12 @@ display_task(void)
 {
     if ((I2C1->CR1 & I2C_CR1_TXDMAEN) != I2C_CR1_TXDMAEN)
         return;
+
+    if ((TIM16->SR & TIM_SR_UIF) == TIM_SR_UIF) {
+        TIM16->SR &= ~TIM_SR_UIF;
+        display_clear();
+        return;
+    }
 
     bool toggle = display.lines[display.current_line].toggle;
 

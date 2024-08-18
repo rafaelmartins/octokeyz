@@ -69,6 +69,11 @@ usbd_out_cb(uint8_t ept)
         if (len > 1)
             display_line_from_report(buf + 1, len - 1);
         break;
+
+    case 3:
+        if (len == 3)
+            display_clear_with_delay((buf[2] << 8) | buf[1]);
+        break;
     }
 }
 
@@ -98,7 +103,8 @@ usbd_ctrl_request_handle_class_cb(usb_ctrl_request_t *req)
                 uint8_t data[] = {
                     2,
                     display_available ? display_lines : 0,
-                    display_available ? display_chars_per_line: 0,
+                    display_available ? display_chars_per_line : 0,
+                    display_available ? (1 << 0) : 0,
                 };
                 usbd_control_in(data, sizeof(data), req->wLength);
                 return true;
@@ -129,7 +135,8 @@ usbd_set_address_hook_cb(uint8_t addr)
     (void) addr;
 
     led_set_state(LED_OFF);
-    display_clear();
+    display_line(6, "Connected!", DISPLAY_HALIGN_CENTER);
+    display_clear_with_delay(1500);
 }
 
 
