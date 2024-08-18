@@ -31,12 +31,12 @@ led_set_state(led_state_t state)
     TIM3->CNT = 0;
 
     switch (state) {
-    case LED_OFF:
-        TIM3->CCER |= TIM_CCER_CC3P;
+    case LED_ON:
+        TIM3->CCMR2 |= TIM_CCMR2_OC3M_0;
         // fallthrough
 
-    case LED_ON:
-        TIM3->CCMR2 = TIM_CCMR2_OC3M_2 | TIM_CCMR2_OC3M_0;
+    case LED_OFF:
+        TIM3->CCMR2 |= TIM_CCMR2_OC3M_2;
         break;
 
     case LED_FLASH:
