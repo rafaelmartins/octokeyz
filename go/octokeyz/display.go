@@ -3,10 +3,6 @@
 
 package octokeyz
 
-import (
-	"fmt"
-)
-
 // DisplayLine represents the identifier of a display line number.
 type DisplayLine byte
 
@@ -36,7 +32,7 @@ const (
 // horizontal alignment. An error may be returned.
 func (d *Device) DisplayLine(line DisplayLine, str string, align DisplayLineAlign) error {
 	if !d.withDisplay {
-		return fmt.Errorf("octokeyz: %w", ErrDisplayNotSupported)
+		return wrapErr(ErrDeviceDisplayNotSupported)
 	}
 
 	end := len(str)
@@ -46,19 +42,19 @@ func (d *Device) DisplayLine(line DisplayLine, str string, align DisplayLineAlig
 	data := append([]byte(str[:end]), make([]byte, int(d.displayCharsPerLine)-end)...)
 	data = append([]byte{byte(line) - 1, byte(align)}, data...)
 
-	return d.dev.SetOutputReport(2, data)
+	return wrapErr(d.dev.SetOutputReport(2, data))
 }
 
 // DisplayClearLine erases the provided display line. An error may be returned.
 func (d *Device) DisplayClearLine(line DisplayLine) error {
-	return d.DisplayLine(line, "", DisplayLineAlignLeft)
+	return wrapErr(d.DisplayLine(line, "", DisplayLineAlignLeft))
 }
 
 // DisplayClear erases the whole display. An error may be returned.
 func (d *Device) DisplayClear() error {
 	for i := DisplayLine1; i <= DisplayLine8; i++ {
 		if err := d.DisplayClearLine(i); err != nil {
-			return err
+			return wrapErr(err)
 		}
 	}
 	return nil

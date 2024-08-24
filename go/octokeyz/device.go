@@ -14,14 +14,24 @@ import (
 // Errors returned from octokeyz package may be tested against these errors
 // with errors.Is.
 var (
-	ErrButtonInvalid           = errors.New("button is not valid")
-	ErrButtonHandlerInvalid    = errors.New("button handler is not valid")
-	ErrDeviceNotFound          = errors.New("device not found")
-	ErrDeviceMoreThanOne       = errors.New("more than one device found")
-	ErrDeviceReadFailed        = errors.New("failed to read hid report")
-	ErrDeviceWriteFailed       = errors.New("failed to write hid report")
-	ErrDisplayNotSupported     = errors.New("hardware does not includes a display")
-	ErrDisplayBadNumberOfLines = errors.New("hardware reported an incompatible number of display lines")
+	ErrButtonInvalid                     = errors.New("button is not valid")
+	ErrButtonHandlerInvalid              = errors.New("button handler is not valid")
+	ErrDeviceDisplayNumberOfLinesInvalid = errors.New("device firmware reported an incompatible number of display lines")
+	ErrDeviceDisplayNotSupported         = errors.New("device hardware does not includes a display")
+	ErrDeviceEnumerationFailed           = usbhid.ErrDeviceEnumerationFailed
+	ErrDeviceFailedToClose               = usbhid.ErrDeviceFailedToClose
+	ErrDeviceFailedToOpen                = usbhid.ErrDeviceFailedToOpen
+	ErrDeviceFirmwareVersionIncompatible = errors.New("device firmware version is not compatible")
+	ErrDeviceIsClosed                    = usbhid.ErrDeviceIsClosed
+	ErrDeviceIsOpen                      = usbhid.ErrDeviceIsOpen
+	ErrDeviceLocked                      = usbhid.ErrDeviceLocked
+	ErrDeviceMoreThanOne                 = errors.New("more than one device found")
+	ErrDeviceNotFound                    = errors.New("device not found")
+	ErrGetFeatureReportFailed            = usbhid.ErrGetFeatureReportFailed
+	ErrGetInputReportFailed              = usbhid.ErrGetInputReportFailed
+	ErrReportBufferOverflow              = usbhid.ErrReportBufferOverflow
+	ErrSetFeatureReportFailed            = usbhid.ErrSetFeatureReportFailed
+	ErrSetOutputReportFailed             = usbhid.ErrSetOutputReportFailed
 )
 
 // Device is an opaque structure that represents an octokeyz USB macropad device
@@ -56,13 +66,20 @@ const (
 	LedOff
 )
 
+func wrapErr(err error) error {
+	if err != nil {
+		return fmt.Errorf("octokeyz: %w", err)
+	}
+	return nil
+}
+
 // Enumerate lists the octokeyz USB macropads connected to the computer.
 func Enumerate() ([]*Device, error) {
 	devices, err := usbhid.Enumerate(func(d *usbhid.Device) bool {
 		return d.VendorId() == USBVendorId && d.ProductId() == USBProductId
 	})
 	if err != nil {
-		return nil, err
+		return nil, wrapErr(err)
 	}
 
 	rv := []*Device{}
@@ -84,9 +101,9 @@ func GetDevice(serialNumber string) (*Device, error) {
 	}
 	if len(devices) == 0 {
 		if serialNumber != "" {
-			return nil, fmt.Errorf("octokeyz: %q: %w", serialNumber, ErrDeviceNotFound)
+			return nil, fmt.Errorf("octokeyz: %w [%q]", ErrDeviceNotFound, serialNumber)
 		}
-		return nil, fmt.Errorf("octokeyz: %w", ErrDeviceNotFound)
+		return nil, wrapErr(ErrDeviceNotFound)
 	}
 
 	if serialNumber == "" {
@@ -99,7 +116,7 @@ func GetDevice(serialNumber string) (*Device, error) {
 			sn = append(sn, dev.SerialNumber())
 		}
 
-		return nil, fmt.Errorf("octokeyz: %q: %w", sn, ErrDeviceMoreThanOne)
+		return nil, fmt.Errorf("octokeyz: %w %q", ErrDeviceMoreThanOne, sn)
 	}
 
 	for _, dev := range devices {
@@ -108,17 +125,17 @@ func GetDevice(serialNumber string) (*Device, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("octokeyz: %q: %w", serialNumber, ErrDeviceNotFound)
+	return nil, fmt.Errorf("octokeyz: %w [%q]", ErrDeviceNotFound, serialNumber)
 }
 
 // Open opens the octokeyz USB macropad for usage.
 func (d *Device) Open() error {
 	if d.dev == nil {
-		return fmt.Errorf("octokeyz: %w", ErrDeviceNotFound)
+		return wrapErr(ErrDeviceNotFound)
 	}
 
 	if byte(d.dev.Version()>>8) != USBVersion {
-		return fmt.Errorf("octokeyz: device version is not compatible, please upgrade: %s: 0x%04x", d.dev.Path(), d.dev.Version())
+		return fmt.Errorf("octokeyz: %w (expected %02Xxx, got %04X)", ErrDeviceFirmwareVersionIncompatible, USBVersion, d.dev.Version())
 	}
 
 	if byte(d.dev.Version()) < 1 {
@@ -126,27 +143,27 @@ func (d *Device) Open() error {
 	}
 
 	if err := d.dev.Open(true); err != nil {
-		return err
+		return wrapErr(err)
 	}
 	d.listen = make(chan bool)
 
 	if buf, err := d.dev.GetFeatureReport(1); err == nil {
-		d.withDisplay = buf[0] == (1 << 0)
+		d.withDisplay = buf[0]&(1<<0) != 0
 
 		if d.withDisplay {
 			buf, err = d.dev.GetFeatureReport(2)
 			if err != nil {
-				return err
+				return wrapErr(err)
 			}
 
 			if buf[0] != 8 {
-				return fmt.Errorf("octokeyz: %w", ErrDisplayBadNumberOfLines)
+				return fmt.Errorf("octokeyz: %w [%d]", ErrDeviceDisplayNumberOfLinesInvalid, buf[0])
 			}
 
 			d.displayCharsPerLine = buf[1]
 
 			if err := d.DisplayClear(); err != nil {
-				return err
+				return wrapErr(err)
 			}
 		}
 	}
@@ -156,20 +173,20 @@ func (d *Device) Open() error {
 // Close closes the octokeyz USB macropad.
 func (d *Device) Close() error {
 	if d.dev == nil {
-		return fmt.Errorf("octokeyz: %w", ErrDeviceNotFound)
+		return wrapErr(ErrDeviceNotFound)
 	}
 
 	d.DisplayClear()
 	d.Led(LedOff)
 	close(d.listen)
-	return d.dev.Close()
+	return wrapErr(d.dev.Close())
 }
 
 // AddHandler registers a ButtonHandler callback to be called whenever the given
 // button is pressed.
 func (d *Device) AddHandler(button ButtonID, fn ButtonHandler) error {
 	if fn == nil {
-		return ErrButtonHandlerInvalid
+		return wrapErr(ErrButtonHandlerInvalid)
 	}
 
 	if d.buttons == nil {
@@ -180,7 +197,7 @@ func (d *Device) AddHandler(button ButtonID, fn ButtonHandler) error {
 		btn.addHandler(fn)
 		return nil
 	}
-	return ErrButtonInvalid
+	return wrapErr(ErrButtonInvalid)
 }
 
 // Listen listens to button press events from the macropad and calls ButtonHandler
@@ -191,7 +208,7 @@ func (d *Device) AddHandler(button ButtonID, fn ButtonHandler) error {
 // non-blocking.
 func (d *Device) Listen(errCh chan error) error {
 	if d.dev == nil {
-		return fmt.Errorf("octokeyz: %w", ErrDeviceNotFound)
+		return wrapErr(ErrDeviceNotFound)
 	}
 
 	for {
@@ -206,7 +223,7 @@ func (d *Device) Listen(errCh chan error) error {
 
 		id, buf, err := d.dev.GetInputReport()
 		if err != nil {
-			return fmt.Errorf("octokeyz: %w: %s", ErrDeviceReadFailed, err)
+			return wrapErr(err)
 		}
 
 		if id != 1 {
@@ -238,17 +255,14 @@ func (d *Device) Listen(errCh chan error) error {
 // Led sets the state of the octokeyz USB macropad led.
 func (d *Device) Led(state LedState) error {
 	if d.dev == nil {
-		return fmt.Errorf("octokeyz: %w", ErrDeviceNotFound)
+		return wrapErr(ErrDeviceNotFound)
 	}
 
 	if d.legacyLedState {
 		state--
 	}
 
-	if err := d.dev.SetOutputReport(1, []byte{byte(state)}); err != nil {
-		return fmt.Errorf("octokeyz: %w: %s", ErrDeviceWriteFailed, err)
-	}
-	return nil
+	return wrapErr(d.dev.SetOutputReport(1, []byte{byte(state)}))
 }
 
 // SerialNumber returns the serial number of the octokeyz USB macropad.

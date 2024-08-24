@@ -21,7 +21,7 @@ type Modifier struct {
 // to the button that will be used as modifier.
 func (m *Modifier) Handler(b *Button) error {
 	if !m.mtx.TryLock() {
-		return errors.New("octokeyz: modifier activated by more than one button")
+		return errors.New("modifier activated by more than one button")
 	}
 	defer m.mtx.Unlock()
 

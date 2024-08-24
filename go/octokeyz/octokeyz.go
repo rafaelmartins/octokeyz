@@ -11,8 +11,8 @@ const (
 	// USB product identifier reported by octokeyz
 	USBProductId uint16 = 0x6184
 
-	// Major USB version number reported by octokeyz that is supported by this package
-	// (this is the interface version, not a USB protocol or product version)
+	// Major USB version number reported by octokeyz firmware that is supported by this package
+	// (this is the interface version, not a USB protocol or product/firmware version)
 	USBVersion byte = 0x01
 
 	// USB manufacturer name reported by octokeyz

@@ -43,7 +43,12 @@ type ButtonHandlerError struct {
 
 // Error returns a string representation of a button handler error.
 func (b ButtonHandlerError) Error() string {
-	return fmt.Sprintf("octokeyz: %s: %s", b.ButtonID, b.Err)
+	return fmt.Sprintf("%s [%s]", b.Err, b.ButtonID)
+}
+
+// Unwrap returns the underlying button handler error.
+func (b ButtonHandlerError) Unwrap() error {
+	return b.Err
 }
 
 // Button is an opaque structure that represents an octokeyz USB macropad button.
