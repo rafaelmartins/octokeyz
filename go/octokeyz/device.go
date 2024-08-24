@@ -14,36 +14,38 @@ import (
 // Errors returned from octokeyz package may be tested against these errors
 // with errors.Is.
 var (
-	ErrButtonInvalid                     = errors.New("button is not valid")
-	ErrButtonHandlerInvalid              = errors.New("button handler is not valid")
-	ErrDeviceDisplayNumberOfLinesInvalid = errors.New("device firmware reported an incompatible number of display lines")
-	ErrDeviceDisplayNotSupported         = errors.New("device hardware does not includes a display")
-	ErrDeviceEnumerationFailed           = usbhid.ErrDeviceEnumerationFailed
-	ErrDeviceFailedToClose               = usbhid.ErrDeviceFailedToClose
-	ErrDeviceFailedToOpen                = usbhid.ErrDeviceFailedToOpen
-	ErrDeviceFirmwareVersionIncompatible = errors.New("device firmware version is not compatible")
-	ErrDeviceIsClosed                    = usbhid.ErrDeviceIsClosed
-	ErrDeviceIsOpen                      = usbhid.ErrDeviceIsOpen
-	ErrDeviceLocked                      = usbhid.ErrDeviceLocked
-	ErrDeviceMoreThanOne                 = errors.New("more than one device found")
-	ErrDeviceNotFound                    = errors.New("device not found")
-	ErrGetFeatureReportFailed            = usbhid.ErrGetFeatureReportFailed
-	ErrGetInputReportFailed              = usbhid.ErrGetInputReportFailed
-	ErrReportBufferOverflow              = usbhid.ErrReportBufferOverflow
-	ErrSetFeatureReportFailed            = usbhid.ErrSetFeatureReportFailed
-	ErrSetOutputReportFailed             = usbhid.ErrSetOutputReportFailed
+	ErrButtonInvalid                           = errors.New("button is not valid")
+	ErrButtonHandlerInvalid                    = errors.New("button handler is not valid")
+	ErrDeviceDisplayClearWithDelayNotSupported = errors.New("device firmware does not supports display clear with delay")
+	ErrDeviceDisplayNumberOfLinesInvalid       = errors.New("device firmware reported an incompatible number of display lines")
+	ErrDeviceDisplayNotSupported               = errors.New("device hardware does not includes a display")
+	ErrDeviceEnumerationFailed                 = usbhid.ErrDeviceEnumerationFailed
+	ErrDeviceFailedToClose                     = usbhid.ErrDeviceFailedToClose
+	ErrDeviceFailedToOpen                      = usbhid.ErrDeviceFailedToOpen
+	ErrDeviceFirmwareVersionIncompatible       = errors.New("device firmware version is not compatible")
+	ErrDeviceIsClosed                          = usbhid.ErrDeviceIsClosed
+	ErrDeviceIsOpen                            = usbhid.ErrDeviceIsOpen
+	ErrDeviceLocked                            = usbhid.ErrDeviceLocked
+	ErrDeviceMoreThanOne                       = errors.New("more than one device found")
+	ErrDeviceNotFound                          = errors.New("device not found")
+	ErrGetFeatureReportFailed                  = usbhid.ErrGetFeatureReportFailed
+	ErrGetInputReportFailed                    = usbhid.ErrGetInputReportFailed
+	ErrReportBufferOverflow                    = usbhid.ErrReportBufferOverflow
+	ErrSetFeatureReportFailed                  = usbhid.ErrSetFeatureReportFailed
+	ErrSetOutputReportFailed                   = usbhid.ErrSetOutputReportFailed
 )
 
 // Device is an opaque structure that represents an octokeyz USB macropad device
 // connected to the computer.
 type Device struct {
-	dev                 *usbhid.Device
-	listen              chan bool
-	buttons             map[ButtonID]*Button
-	data                byte
-	legacyLedState      bool
-	withDisplay         bool
-	displayCharsPerLine byte
+	dev                       *usbhid.Device
+	listen                    chan bool
+	buttons                   map[ButtonID]*Button
+	data                      byte
+	legacyLedState            bool
+	withDisplay               bool
+	withDisplayClearWithDelay bool
+	displayCharsPerLine       byte
 }
 
 // LedState represents a state to set the octokeyz USB macropad led to.
@@ -162,8 +164,12 @@ func (d *Device) Open() error {
 
 			d.displayCharsPerLine = buf[1]
 
+			if len(buf) > 2 {
+				d.withDisplayClearWithDelay = buf[2]&(1<<0) != 0
+			}
+
 			if err := d.DisplayClear(); err != nil {
-				return wrapErr(err)
+				return err
 			}
 		}
 	}

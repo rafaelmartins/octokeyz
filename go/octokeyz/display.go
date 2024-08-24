@@ -3,6 +3,11 @@
 
 package octokeyz
 
+import (
+	"encoding/binary"
+	"time"
+)
+
 // DisplayLine represents the identifier of a display line number.
 type DisplayLine byte
 
@@ -47,14 +52,32 @@ func (d *Device) DisplayLine(line DisplayLine, str string, align DisplayLineAlig
 
 // DisplayClearLine erases the provided display line. An error may be returned.
 func (d *Device) DisplayClearLine(line DisplayLine) error {
-	return wrapErr(d.DisplayLine(line, "", DisplayLineAlignLeft))
+	return d.DisplayLine(line, "", DisplayLineAlignLeft)
+}
+
+// DisplayClearWithDelay erases the whole display after the provided delay (milliseconds
+// resolution). An error may be returned if the display does not support this feature.
+// If a new line is drawn while the delay is ongoing the display is cleared immediately.
+func (d *Device) DisplayClearWithDelay(delay time.Duration) error {
+	if !d.withDisplay {
+		return wrapErr(ErrDeviceDisplayNotSupported)
+	}
+	if !d.withDisplayClearWithDelay {
+		return wrapErr(ErrDeviceDisplayClearWithDelayNotSupported)
+	}
+
+	return wrapErr(d.dev.SetOutputReport(3, binary.LittleEndian.AppendUint16(nil, uint16(delay/time.Millisecond))))
 }
 
 // DisplayClear erases the whole display. An error may be returned.
 func (d *Device) DisplayClear() error {
+	if d.withDisplayClearWithDelay {
+		return d.DisplayClearWithDelay(0)
+	}
+
 	for i := DisplayLine1; i <= DisplayLine8; i++ {
 		if err := d.DisplayClearLine(i); err != nil {
-			return wrapErr(err)
+			return err
 		}
 	}
 	return nil
