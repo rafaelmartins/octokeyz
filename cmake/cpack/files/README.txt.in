@@ -43,11 +43,11 @@ This distribution contains the following files:
             octokeyz/                   => octokeyz variant PCB
                 octokeyz.pdf            => Schematics
                 octokeyz.html           => Interactive Bill of Materials
-                octokeyz_rev*.zip       => Gerbar files
+                octokeyz_rev*.zip       => Gerber files
             octokeyz-mega/              => octokeyz-mega variant PCB
                 octokeyz-mega.pdf       => Schematics
                 octokeyz-mega.html      => Interactive Bill of Materials
-                octokeyz-mega_rev*.zip  => Gerbar files
+                octokeyz-mega_rev*.zip  => Gerber files
         udev/                           => udev rules for linux
             60-octokeyz.rules           => allow logged-in users to access
 
