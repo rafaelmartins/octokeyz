@@ -190,8 +190,6 @@ static const config_descriptor_t config_descriptor = {
         .bmAttributes = USB_DESCR_EPT_ATTR_INTERRUPT,
         .wMaxPacketSize = USBD_EP1_IN_SIZE,
         .bInterval = 10,
-        .bRefresh = 0,
-        .bSynchAddress = 0,
     },
     .endpoint_out_descriptor = {
         .bLength = sizeof(usb_endpoint_descriptor_t),
@@ -200,8 +198,6 @@ static const config_descriptor_t config_descriptor = {
         .bmAttributes = USB_DESCR_EPT_ATTR_INTERRUPT,
         .wMaxPacketSize = USBD_EP1_OUT_SIZE,
         .bInterval = 10,
-        .bRefresh = 0,
-        .bSynchAddress = 0,
     },
 };
 
