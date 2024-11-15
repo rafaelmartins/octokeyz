@@ -18,6 +18,8 @@ add_executable(octokeyz
     display.c
     display.h
     display-font.h
+    idle.c
+    idle.h
     led.c
     led.h
     main.c

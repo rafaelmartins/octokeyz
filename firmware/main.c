@@ -10,6 +10,7 @@
 
 #include "bootloader.h"
 #include "display.h"
+#include "idle.h"
 #include "led.h"
 
 #define BOOTLOADER_COMBO (GPIO_IDR_0 | GPIO_IDR_4)
@@ -42,11 +43,17 @@ usbd_in_cb(uint8_t ept)
     if (ept != 1)
         return;
 
-    uint8_t v[] = {
-        1,
-        ~((uint8_t) (GPIOA->IDR)),
-    };
-    usbd_in(ept, &v, sizeof(v));
+    static uint8_t gstate = 0xff;
+    uint8_t lstate = (uint8_t) GPIOA->IDR;
+
+    if (idle_request() || (gstate != lstate)) {
+        gstate = lstate;
+        uint8_t v[] = {
+            1,
+            ~gstate,
+        };
+        usbd_in(ept, &v, sizeof(v));
+    }
 }
 
 
@@ -83,7 +90,9 @@ usbd_ctrl_request_handle_class_cb(usb_ctrl_request_t *req)
 {
     switch (req->bRequest) {
     case USB_REQ_HID_GET_REPORT:
-        if ((req->wValue >> 8) != 3)
+        if (((req->bmRequestType & USB_REQ_DIR_MASK) == USB_REQ_DIR_HOST_TO_DEVICE) ||
+            (req->wIndex != 0) ||
+            ((req->wValue >> 8) != 3))
             break;
 
         switch ((uint8_t) (req->wValue)) {
@@ -112,6 +121,27 @@ usbd_ctrl_request_handle_class_cb(usb_ctrl_request_t *req)
             break;
         }
         break;
+
+    case USB_REQ_HID_SET_IDLE:
+        if (((req->bmRequestType & USB_REQ_DIR_MASK) == USB_REQ_DIR_DEVICE_TO_HOST) ||
+            (req->wIndex != 0) ||
+            ((((uint8_t) req->wValue) != 0) && (((uint8_t) req->wValue) != 1)))
+            break;
+
+        idle_set((uint8_t) (req->wValue >> 8));
+        return true;
+
+    case USB_REQ_HID_GET_IDLE:
+        {
+            if (((req->bmRequestType & USB_REQ_DIR_MASK) == USB_REQ_DIR_HOST_TO_DEVICE) ||
+                (req->wIndex != 0) ||
+                ((((uint8_t) req->wValue) != 0) && (((uint8_t) req->wValue) != 1)))
+                break;
+
+            uint8_t data = idle_get();
+            usbd_control_in(&data, sizeof(data), req->wLength);
+            return true;
+        }
     }
     return false;
 }
@@ -159,6 +189,7 @@ main(void)
         bootloader_reset();
 
     clock_init();
+    idle_init();
     led_init();
     display_available = display_init();
 
