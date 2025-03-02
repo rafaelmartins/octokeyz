@@ -144,7 +144,7 @@ usbd_get_device_descriptor_cb(void)
 }
 
 
-typedef __PACKED_STRUCT {
+typedef struct __attribute__((packed)) {
     usb_config_descriptor_t config_descriptor;
     usb_interface_descriptor_t interface_descriptor;
     usb_hid_descriptor_t hid_descriptor;
