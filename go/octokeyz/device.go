@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rafaelmartins/usbhid"
+	"rafaelmartins.com/p/usbhid"
 )
 
 // Errors returned from octokeyz package may be tested against these errors
