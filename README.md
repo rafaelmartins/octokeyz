@@ -3,30 +3,30 @@
 A simple USB macropad with 8 programmable buttons.
 
 
-## Motivation / Project requirements
+## Requirements/Motivation
 
-- [x] I want to have a simple macropad I can use to control my computer.
-- [x] I want to be able to write userspace programs in Golang, that will react to the keypress events in the macropad and execute some Golang code, instead of building long sequences of keypress macros.
-- [x] I want the PCB to be simple (PTH parts only), to have only the buttons and a single indicator LED, and to use the simplest/smallest microcontroller that can handle USB 1.1 and 8 buttons, like the [`ATtiny4313`](https://www.microchip.com/en-us/product/attiny4313).
-- [x] I want the enclosure to be 3D-printable at home.
-- [x] I want the firmware to be as USB HID compliant as possible, so I can learn more about the USB stack and specifications.
-- [x] I want the client library to support at least Linux and Windows.
+- [x] I would like a simple macro pad that I can use to control my computer.
+- [x] I would like to be able to write userspace programs in Go that respond to the key press events from the macropad and then execute some Go code, rather than emulating complex key press sequences.
+- [x] I would like the PCB to be as simple as possible, with only PTH components, just buttons and a single indicator LED, and the smallest/simplest microcontroller that can handle USB 1.1 and 8 buttons, such as the [`ATtiny4313`](https://www.microchip.com/en-us/product/attiny4313).
+- [x] I would like the case to be suitable for 3D printing at home.
+- [x] I would like the firmware to be as USB HID compliant as possible, so I can learn more about the USB stack and specifications.
+- [x] I would like the client library to support at least Linux and Windows.
 
 > [!NOTE]
-> After using the original `octokeyz` macropad for a few months I realized that having a small OLED screen added to it could be very useful. This new addition required using a more powerful microcontroller (I picked the [`STM32F042K6`](https://www.st.com/en/microcontrollers-microprocessors/stm32f042k6.html)/[`STM32F042K4`](https://www.st.com/en/microcontrollers-microprocessors/stm32f042k4.html), which is not PTH, but still quite easy to hand-solder).
+> Following several months of use with the initial `octokeyz` macro pad, I recognized that incorporating a tiny OLED display would significantly enhance its functionality. To accomplish this, I chose a more powerful microcontroller, namely the [`STM32F042K6`](https://www.st.com/en/microcontrollers-microprocessors/stm32f042k6.html)/[`STM32F042K4`](https://www.st.com/en/microcontrollers-microprocessors/stm32f042k4.html), although it's not a PTH part, it can be easily hand-soldered.
 >
-> These additions resulted in a new `octokeyz` macropad variant named `octokeyz-mega`, that also includes support for 5-pin mechanical keyboard switches instead of the simpler 12mm SPST push-buttons used in the original variant.
+> The introduction of these enhancements led to the creation of an updated version of the `octokeyz` macro pad, dubbed `octokeyz-mega`. This revised model boasts compatibility with more advanced 5-pin mechanical keyboard switches, rather than the simpler 12mm SPST push-button design found in the initial iteration.
 >
-> Given the low price of the STM32 microcontrollers nowadays, and to simplify the project maintenance, I ended up converting the original `octokeyz` variant to also use the [`STM32F042K6`](https://www.st.com/en/microcontrollers-microprocessors/stm32f042k6.html)/[`STM32F042K4`](https://www.st.com/en/microcontrollers-microprocessors/stm32f042k4.html) parts. This way we can deploy the same DFU-capable firmware to any of the board variants.
+> Given the low cost of STM32 microcontrollers today, and for the sake of simplifying maintenance, I converted the original `octokeyz` variant to also use the [`STM32F042K6`](https://www.st.com/en/microcontrollers-microprocessors/stm32f042k6.html)/[`STM32F042K4`](https://www.st.com/en/microcontrollers-microprocessors/stm32f042k4.html) parts. This allows us to use a single DFU-compatible firmware across all board variants, simplifying the deployment process.
 
 
 ## Variants
 
 > [!TIP]
-> The following resources are common to all variants:
+> The following resources are shared among all the variants:
 >
-> - [Firmware source code](./firmware/)
-> - [Golang client library](./go/octokeyz/)
+> - [Source code of the firmware](./firmware/)
+> - [Go client library](./go/octokeyz/)
 > - [`udev` rules for Linux](./share/udev/)
 
 
@@ -34,7 +34,7 @@ A simple USB macropad with 8 programmable buttons.
 
 - [Schematics](./pcb/octokeyz-mega/octokeyz-mega.pdf)
 - [Interactive Bill of Materials](https://rafaelmartins.github.io/octokeyz/ibom/octokeyz-mega.html)
-- [Kicad sources](./pcb/octokeyz-mega/)
+- [Kicad files](./pcb/octokeyz-mega/)
 - [Enclosure 3D models](./3d-models/octokeyz-mega/)
 
 ![octokeyz-mega Front](./share/images/octokeyz-mega/front.jpg)
@@ -46,7 +46,7 @@ A simple USB macropad with 8 programmable buttons.
 
 - [Schematics](./pcb/octokeyz/octokeyz.pdf)
 - [Interactive Bill of Materials](https://rafaelmartins.github.io/octokeyz/ibom/octokeyz.html)
-- [Kicad sources](./pcb/octokeyz/)
+- [Kicad files](./pcb/octokeyz/)
 - [Enclosure 3D models](./3d-models/octokeyz/)
 
 ![octokeyz Front](./share/images/octokeyz/front.jpg)
@@ -100,10 +100,10 @@ func main() {
 
 ## F.A.Q.
 
-### How to implement a more complex client software?
+### How do we implement more complex client software?
 
-Please check the Golang [API documentation](https://pkg.go.dev/github.com/rafaelmartins/octokeyz/go/octokeyz).
+Please check the Go [API documentation](https://pkg.go.dev/github.com/rafaelmartins/octokeyz/go/octokeyz).
 
-### How to use this macropad to control `OBS`, similarly to what the `Stream Deck` does?
+### How can I use this macropad to control `OBS` in the same way as the `Stream Deck` does?
 
-It is possible to write Golang code that interacts with `OBS` by using the `goobs` library: https://github.com/andreykaipov/goobs. This library could be easily integrated with our [Golang client library](./go/octokeyz/).
+You can write Go code that interacts with `OBS` using the `goobs` library, which is available at https://github.com/andreykaipov/goobs. This library can be easily integrated with our [existing Go client library](./go/octokeyz/).
