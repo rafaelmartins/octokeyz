@@ -1,7 +1,7 @@
 (footprint "USB_Mini-B_PTH"
-	(version 20240108)
+	(version 20241229)
 	(generator "pcbnew")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(layer "F.Cu")
 	(property "Reference" "J?"
 		(at -3.2 -1.2 180)
@@ -28,18 +28,6 @@
 			(justify left)
 		)
 	)
-	(property "Footprint" "USB_Mini-B_PTH"
-		(at 0 0 0)
-		(unlocked yes)
-		(layer "F.Fab")
-		(hide yes)
-		(uuid "5c1cd22c-40d1-4f1f-9c1e-201561804f07")
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-	)
 	(property "Datasheet" ""
 		(at 0 0 0)
 		(unlocked yes)
@@ -49,6 +37,7 @@
 		(effects
 			(font
 				(size 1.27 1.27)
+				(thickness 0.15)
 			)
 		)
 	)
@@ -61,6 +50,7 @@
 		(effects
 			(font
 				(size 1.27 1.27)
+				(thickness 0.15)
 			)
 		)
 	)
@@ -381,6 +371,7 @@
 		(remove_unused_layers no)
 		(uuid "93b996b5-156b-427a-9eb0-c318d0512777")
 	)
+	(embedded_fonts no)
 	(model "${KIPRJMOD}/../lib/3d-models/USB_Mini-B_PTH.step"
 		(offset
 			(xyz 1.6 -8.7 2)

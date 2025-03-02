@@ -1,7 +1,7 @@
 (footprint "SW_PUSH-12mm"
-	(version 20240108)
+	(version 20241229)
 	(generator "pcbnew")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(layer "F.Cu")
 	(descr "SW PUSH 12mm https://www.e-switch.com/system/asset/product_line/data_sheet/143/TL1100.pdf")
 	(tags "tact sw push 12mm")
@@ -27,18 +27,6 @@
 			)
 		)
 	)
-	(property "Footprint" "SW_PUSH-12mm"
-		(at 0 0 0)
-		(unlocked yes)
-		(layer "F.Fab")
-		(hide yes)
-		(uuid "69f11233-a63e-409d-971f-196918f21550")
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-	)
 	(property "Datasheet" ""
 		(at 0 0 0)
 		(unlocked yes)
@@ -48,6 +36,7 @@
 		(effects
 			(font
 				(size 1.27 1.27)
+				(thickness 0.15)
 			)
 		)
 	)
@@ -60,6 +49,7 @@
 		(effects
 			(font
 				(size 1.27 1.27)
+				(thickness 0.15)
 			)
 		)
 	)
@@ -151,7 +141,7 @@
 			(width 0.12)
 			(type solid)
 		)
-		(fill none)
+		(fill no)
 		(layer "F.SilkS")
 		(uuid "edcbde49-9efe-4e67-b833-e2b6f9b00082")
 	)
@@ -278,6 +268,7 @@
 		(remove_unused_layers no)
 		(uuid "d2b69df0-182a-431c-a694-8d3a2f14dbc3")
 	)
+	(embedded_fonts no)
 	(model "${KIPRJMOD}/../lib/3d-models/SW_PUSH-12mm.step"
 		(offset
 			(xyz 6.2 -2.5 3.9)
