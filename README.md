@@ -26,7 +26,7 @@ A simple USB macropad with 8 programmable buttons.
 > The following resources are shared among all the variants:
 >
 > - [Source code of the firmware](./firmware/)
-> - [Go client library](./go/octokeyz/)
+> - [Go client library](https://github.com/rafaelmartins/go-octokeyz)
 > - [`udev` rules for Linux](./share/udev/)
 
 
@@ -106,4 +106,4 @@ Please check the Go [API documentation](https://pkg.go.dev/rafaelmartins.com/p/o
 
 ### How can I use this macropad to control `OBS` in the same way as the `Stream Deck` does?
 
-You can write Go code that interacts with `OBS` using the `goobs` library, which is available at https://github.com/andreykaipov/goobs. This library can be easily integrated with our [existing Go client library](./go/octokeyz/).
+You can write Go code that interacts with `OBS` using the `goobs` library, which is available at https://github.com/andreykaipov/goobs. This library can be easily integrated with our [existing Go client library](https://github.com/rafaelmartins/go-octokeyz).
