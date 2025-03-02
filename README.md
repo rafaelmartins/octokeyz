@@ -65,7 +65,7 @@ import (
 	"log"
 	"time"
 
-	"rafaelmartins.com/p/octokeyz/go/octokeyz"
+	"rafaelmartins.com/p/octokeyz"
 )
 
 func main() {
@@ -102,7 +102,7 @@ func main() {
 
 ### How do we implement more complex client software?
 
-Please check the Go [API documentation](https://pkg.go.dev/rafaelmartins.com/p/octokeyz/go/octokeyz).
+Please check the Go [API documentation](https://pkg.go.dev/rafaelmartins.com/p/octokeyz).
 
 ### How can I use this macropad to control `OBS` in the same way as the `Stream Deck` does?
 
