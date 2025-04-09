@@ -64,7 +64,7 @@ usbd_out_cb(uint8_t ept)
         return;
 
     uint8_t buf[USBD_EP1_OUT_SIZE];
-    uint16_t len = usbd_out(ept, buf, sizeof(buf));
+    uint16_t len = usbd_out(ept, buf, sizeof(buf), true);
 
     switch (buf[0]) {
     case 1:
