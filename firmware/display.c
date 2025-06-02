@@ -83,6 +83,8 @@ static struct {
 bool
 display_init(void)
 {
+    RCC->CFGR3 |= RCC_CFGR3_I2C1SW_SYSCLK;
+
     RCC->AHBENR |=  RCC_AHBENR_DMA1EN | RCC_AHBENR_GPIOAEN;
     RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
 
