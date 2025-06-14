@@ -80,6 +80,37 @@ static struct {
 #undef _line_data_init
 
 
+static inline bool
+check_availability(void)
+{
+    for (uint8_t i = 10; i; i--) {
+        I2C1->CR1 = I2C_CR1_PE;
+        I2C1->CR2 = (display_address << 1) | I2C_CR2_START | I2C_CR2_AUTOEND;
+
+        for (__IO uint16_t cnt = 0xffff; cnt; cnt--) {
+            // display is (explicitly) not ready
+            if ((I2C1->ISR & (I2C_ISR_STOPF | I2C_ISR_NACKF)) == (I2C_ISR_STOPF | I2C_ISR_NACKF)) {
+                I2C1->CR1 &= ~I2C_CR1_PE;
+
+                TIM16->ARR = 49;  // 50ms
+                TIM16->EGR = TIM_EGR_UG;
+                TIM16->CR1 |= TIM_CR1_CEN;
+                while ((TIM16->SR & TIM_SR_UIF) != TIM_SR_UIF);
+                TIM16->SR &= ~TIM_SR_UIF;
+                break;
+            }
+
+            // display is ready
+            if ((I2C1->ISR & (I2C_ISR_STOPF | I2C_ISR_NACKF)) == I2C_ISR_STOPF) {
+                I2C1->CR1 &= ~I2C_CR1_PE;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
 bool
 display_init(void)
 {
@@ -87,41 +118,26 @@ display_init(void)
 
     RCC->AHBENR |=  RCC_AHBENR_DMA1EN | RCC_AHBENR_GPIOAEN;
     RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
+    RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
 
     GPIOA->OTYPER |= GPIO_OTYPER_OT_9 | GPIO_OTYPER_OT_10;
     GPIOA->PUPDR |= GPIO_PUPDR_PUPDR9_0 | GPIO_PUPDR_PUPDR10_0;
     GPIOA->AFR[1] |= (4 << GPIO_AFRH_AFSEL9_Pos) | (4 << GPIO_AFRH_AFSEL10_Pos);
     GPIOA->MODER |= (GPIO_MODER_MODER9_1 | GPIO_MODER_MODER10_1);
 
+    TIM16->CR1 = TIM_CR1_OPM | TIM_CR1_URS;
+    TIM16->DIER = TIM_DIER_UIE;
+    TIM16->PSC = SystemCoreClock / 1000 - 1;
+
     I2C1->TIMINGR = 0x00200C1E;  // ~1MHz
-    I2C1->CR1 = I2C_CR1_PE;
-    I2C1->CR2 = (display_address << 1) | I2C_CR2_START | I2C_CR2_AUTOEND;
 
-    bool stop = false;
-    uint16_t cnt = 0xffff;
-    while (cnt > 0) {
-        if ((I2C1->ISR & I2C_ISR_NACKF) != 0)
-            break;
-
-        if ((I2C1->ISR & I2C_ISR_STOPF) != 0) {
-            stop = true;
-            break;
-        }
-    }
-    I2C1->CR1 = 0;
-    if (cnt == 0 || !stop)
+    if (!check_availability())
         return false;
 
     I2C1->CR1 = I2C_CR1_TXDMAEN | I2C_CR1_PE;
 
     DMA1_Channel2->CPAR = (uint32_t) &(I2C1->TXDR);
     DMA1_Channel2->CCR = DMA_CCR_DIR | DMA_CCR_PL | DMA_CCR_MINC | DMA_CCR_TCIE;
-
-    RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
-
-    TIM16->CR1 = TIM_CR1_OPM | TIM_CR1_URS;
-    TIM16->DIER = TIM_DIER_UIE;
-    TIM16->PSC = SystemCoreClock / 1000 - 1;
 
     display_clear();
     return true;
