@@ -87,7 +87,7 @@ check_availability(void)
         I2C1->CR1 = I2C_CR1_PE;
         I2C1->CR2 = (display_address << 1) | I2C_CR2_START | I2C_CR2_AUTOEND;
 
-        for (__IO uint16_t cnt = 0xffff; cnt; cnt--) {
+        for (uint16_t cnt = 0xffff; cnt; cnt--) {
             // display is (explicitly) not ready
             if ((I2C1->ISR & (I2C_ISR_STOPF | I2C_ISR_NACKF)) == (I2C_ISR_STOPF | I2C_ISR_NACKF)) {
                 TIM16->ARR = 49;  // 50ms
