@@ -90,8 +90,6 @@ check_availability(void)
         for (__IO uint16_t cnt = 0xffff; cnt; cnt--) {
             // display is (explicitly) not ready
             if ((I2C1->ISR & (I2C_ISR_STOPF | I2C_ISR_NACKF)) == (I2C_ISR_STOPF | I2C_ISR_NACKF)) {
-                I2C1->CR1 &= ~I2C_CR1_PE;
-
                 TIM16->ARR = 49;  // 50ms
                 TIM16->EGR = TIM_EGR_UG;
                 TIM16->CR1 |= TIM_CR1_CEN;
@@ -106,6 +104,7 @@ check_availability(void)
                 return true;
             }
         }
+        I2C1->CR1 &= ~I2C_CR1_PE;
     }
     return false;
 }
