@@ -5,7 +5,7 @@ include(FetchContent)
 
 FetchContent_Declare(usbd_fs_stm32
     GIT_REPOSITORY https://github.com/rafaelmartins/usbd-fs-stm32.git
-    GIT_TAG 9b7e0f61bd7c3100fd3cf54745f8cd701cd23bfd
+    GIT_TAG 4a1295d85854eaa0729ba3e531d1fa69adfa0025
 )
 FetchContent_MakeAvailable(
     usbd_fs_stm32
