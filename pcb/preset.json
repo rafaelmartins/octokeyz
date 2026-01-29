@@ -1,0 +1,83 @@
+{
+  "colors": [
+    {
+      "color": "rgb(194, 194, 194)",
+      "layer": ""
+    },
+    {
+      "color": "rgb(102, 102, 128)",
+      "layer": "background_bottom"
+    },
+    {
+      "color": "rgb(204, 204, 230)",
+      "layer": "background_top"
+    },
+    {
+      "color": "rgba(110, 115, 77, 0.902)",
+      "layer": "board"
+    },
+    {
+      "color": "rgb(191, 156, 59)",
+      "layer": "copper"
+    },
+    {
+      "color": "rgb(191, 156, 59)",
+      "layer": "copper_bottom"
+    },
+    {
+      "color": "rgb(240, 240, 240)",
+      "layer": "silkscreen_bottom"
+    },
+    {
+      "color": "rgb(240, 240, 240)",
+      "layer": "silkscreen_top"
+    },
+    {
+      "color": "rgba(0, 0, 72, 0.831)",
+      "layer": "soldermask_bottom"
+    },
+    {
+      "color": "rgba(0, 0, 72, 0.831)",
+      "layer": "soldermask_top"
+    },
+    {
+      "color": "rgb(128, 128, 128)",
+      "layer": "solderpaste"
+    },
+    {
+      "color": "rgb(217, 217, 217)",
+      "layer": "user_comments"
+    },
+    {
+      "color": "rgb(217, 217, 217)",
+      "layer": "user_drawings"
+    },
+    {
+      "color": "rgb(179, 26, 26)",
+      "layer": "user_eco1"
+    },
+    {
+      "color": "rgb(179, 26, 26)",
+      "layer": "user_eco2"
+    }
+  ],
+  "layers": [
+    "fp_text",
+    "fp_values",
+    "fp_references",
+    "board",
+    "copper",
+    "copper_bottom",
+    "silkscreen_bottom",
+    "silkscreen_top",
+    "soldermask_bottom",
+    "soldermask_top",
+    "solderpaste",
+    "adhesive",
+    "th_models",
+    "smd_models",
+    "virtual_models",
+    "3d_axes"
+  ],
+  "name": "blue"
+}
