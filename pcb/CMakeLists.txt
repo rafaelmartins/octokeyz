@@ -42,11 +42,6 @@ foreach(variant octokeyz octokeyz-mega)
     endif()
 
     file(GLOB gerber ${variant}/gerber/${variant}_rev*.zip)
-    install(FILES
-        ${variant}/${variant}.pdf
-        ${gerber}
-        DESTINATION share/pcb/${variant}
-    )
 
     file(READ ${variant}/${variant}.kicad_pcb kicad_pcb)
     if(NOT kicad_pcb)

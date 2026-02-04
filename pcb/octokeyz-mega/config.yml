@@ -1,0 +1,23 @@
+---
+projects:
+  - file: octokeyz-mega.kicad_pro
+    pcb-render:
+      enable: true
+      include-dnp: true
+      width: 3620
+      height: 3420
+      zoom: 0.95
+      scales:
+        - 480
+        - 720
+        - 1080
+      sides:
+        - top
+        - bottom
+    pcb-ibom:
+      enable: true
+    pcb-gerber:
+      enable: true
+      copy-pattern: gerber/*.zip
+    sch-export-pdf:
+      enable: true
