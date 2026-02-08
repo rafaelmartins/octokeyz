@@ -74,14 +74,14 @@ if err := dev.Listen(errCh); err != nil {
 
 Button constants are `BUTTON_1` through `BUTTON_8`.
 
-`Listen()` blocks indefinitely, dispatching events to registered handlers. If a handler returns an error, it is wrapped in a `ButtonHandlerError` and sent to the `errCh` channel without stopping the event loop. Pass `nil` for `errCh` to discard handler errors.
+`Listen()` blocks indefinitely, dispatching events to registered handlers. If a handler returns an error, it is wrapped in a `ButtonHandlerError` and sent to the `errCh` channel without stopping the event loop. Pass `nil` for `errCh` to have errors sent to the standard logger.
 
 ### Modifier Buttons
 
 The `Modifier` type implements shift/modifier-like functionality. Register its `Handler` method on a button, then check `Pressed()` from other handlers to branch on modifier state.
 
 ```go
-modifier := &octokeyz.Modifier{}
+var modifier octokeyz.Modifier
 
 dev.AddHandler(octokeyz.BUTTON_8, modifier.Handler)
 
