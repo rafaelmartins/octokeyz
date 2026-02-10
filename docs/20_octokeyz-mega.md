@@ -29,7 +29,7 @@ octokeyz-mega PCB, top side
 ![octokeyz-mega PCB, bottom side](@@/p/octokeyz/kicad/octokeyz-mega_20240530_bottom_1080.png)
 octokeyz-mega PCB, bottom side
 
-Downloadable resources:
+**Resources:**
 
 - [Schematic (PDF)](@@/p/octokeyz/kicad/octokeyz-mega_20240530_sch.pdf)
 - [Interactive BOM](@@/p/octokeyz/kicad/octokeyz-mega_20240530_ibom.html)
@@ -55,7 +55,7 @@ OpenSCAD source files are in the repository under `3d-models/octokeyz-mega/`, wi
 
 SSD1306 OLED module, 128x64 pixels, connected via I2C at address `0x3c` on pins PA9 (SCL) and PA10 (SDA). The display provides 8 lines of 21 characters each, rendered with a 5x7 pixel font (6px cell width including spacing). Three text alignment modes are supported: left, right, and center.
 
-Display rendering is double-buffered at the line level - each of the 8 lines has two buffers, so new content can be prepared in one buffer while the other is being transmitted to the display via DMA (DMA1 Channel 2). This avoids blocking the main loop during I2C transfers.
+Display rendering is double-buffered at the line level -- each of the 8 lines has two buffers, so new content can be prepared in one buffer while the other is being transmitted to the display via DMA (DMA1 Channel 2). This avoids blocking the main loop during I2C transfers.
 
 The firmware probes the I2C bus for the display at startup, retrying up to 10 times with 50ms waits between attempts. If the display is not detected, all display features are silently disabled. This is how the same firmware binary runs on both variants: the basic [octokeyz](10_octokeyz.md) simply has no display connected.
 

@@ -29,7 +29,7 @@ octokeyz PCB, top side
 ![octokeyz PCB, bottom side](@@/p/octokeyz/kicad/octokeyz_20240616_bottom_1080.png)
 octokeyz PCB, bottom side
 
-Downloadable resources:
+**Resources:**
 
 - [Schematic (PDF)](@@/p/octokeyz/kicad/octokeyz_20240616_sch.pdf)
 - [Interactive BOM](@@/p/octokeyz/kicad/octokeyz_20240616_ibom.html)

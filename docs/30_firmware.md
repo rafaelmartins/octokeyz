@@ -8,9 +8,9 @@ The firmware implements a USB HID device with a custom vendor protocol. Host-sid
 
 ### Prerequisites
 
-- CMake 3.22+
+- CMake 3.25 or later
 - Ninja build system (optional, but recommended)
-- ARM embedded GCC cross-compiler (`arm-none-eabi-gcc`)
+- ARM GNU Toolchain (`arm-none-eabi`)
 - Git
 
 The two library dependencies -- [cmake-cmsis-stm32](https://github.com/rafaelmartins/cmake-cmsis-stm32) (build framework) and [usbd-fs-stm32](https://github.com/rafaelmartins/usbd-fs-stm32) (USB device stack) -- are fetched automatically via CMake FetchContent during configuration.
@@ -26,8 +26,8 @@ cmake --build build
 
 The build produces the following in the `build/firmware/` directory:
 
-| File | Format |
-|------|--------|
+| File | Description |
+|------|-------------|
 | `octokeyz.elf` | ELF binary |
 | `octokeyz.bin` | Raw binary |
 | `octokeyz.hex` | Intel HEX |
@@ -40,14 +40,16 @@ The firmware version is derived from git tags matching the `v[0-9]*` pattern. Be
 
 The linker script (`firmware/STM32F042KxTx_FLASH.ld`) targets the smaller K4 memory to ensure compatibility with both STM32F042K4 and K6 variants:
 
-- Flash: 16 KB at `0x08000000`
-- RAM: 6 KB at `0x20000000`
+| Region | Start Address | Size |
+|--------|---------------|------|
+| Flash | `0x08000000` | 16 KB |
+| RAM | `0x20000000` | 6 KB |
 
 ## Flashing
 
 ### Using ST-Link
 
-For a freshly built firmware, with `st-flash` (from https://github.com/stlink-org/stlink) installed, run:
+With `st-flash` (from https://github.com/stlink-org/stlink) installed, run:
 
 ```bash
 cmake --build build --target octokeyz-stlink-write
@@ -67,7 +69,7 @@ Once in DFU mode, follow the instructions from my generic [Hardware Build Manual
 
 ## Linux udev Rules
 
-Linux users may have issues connecting to the macro pad as a normal user.
+Linux users may have issues connecting to the macropad as a normal user.
 
 The file `share/udev/60-octokeyz.rules` grants device access to users in the `plugdev` group and to logged-in users via the `uaccess` tag:
 
@@ -103,8 +105,8 @@ The firmware runs on HSI48 at 48 MHz (internal oscillator, no external crystal).
 
 ### Source Files
 
-| File | Responsibility |
-|------|----------------|
+| File | Purpose |
+|------|---------|
 | `main.c` | Clock init, GPIO setup, USB and display init, main loop (`usbd_task()` + `display_task()`), USB callback implementations |
 | `descriptors.c` | USB device/config/HID descriptors, string descriptors, HID report descriptor |
 | `display.c` | SSD1306 driver: I2C + DMA init, double-buffered line rendering, font rasterization, delayed clear |
@@ -122,8 +124,8 @@ The firmware runs on HSI48 at 48 MHz (internal oscillator, no external crystal).
 | Device class | HID (interface-level) |
 | VID | `0x1d50` (generously provided by OpenMoko) |
 | PID | `0x6184` |
-| Manufacturer string | `rgm.io` |
-| Product string | `octokeyz` |
+| Manufacturer | `rgm.io` |
+| Product | `octokeyz` |
 | Serial number | STM32 unique device ID |
 | Max power | 100 mA (bus-powered) |
 | HID version | 1.11 |

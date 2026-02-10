@@ -6,7 +6,7 @@ menu: Main
 ![octokeyz-mega, assembled](../share/images/octokeyz-mega/front.jpg)
 [octokeyz-mega](20_octokeyz-mega.md), assembled
 
-## What It Is
+## Overview
 
 octokeyz is a complete open-source USB macropad project (firmware, PCB designs, 3D-printable enclosures, and a Go client library) built around the STM32F042 microcontroller. It connects over USB HID, so it works on Linux, macOS, and Windows without drivers. But here's where it gets interesting: instead of mapping buttons to keyboard shortcuts, you write real Go programs that react to button presses and can talk to anything -- APIs, CI pipelines, home automation, media servers, whatever you can reach from code.
 
