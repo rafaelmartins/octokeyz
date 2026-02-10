@@ -55,7 +55,7 @@ cmake --build build --target octokeyz-stlink-write
 
 ### Using USB DFU
 
-Firmware flashing can be done over USB using the STM32's built-in DFU bootloader. There are some ways to enter DFU mode:
+Firmware flashing can be done over USB using the STM32's built-in DFU bootloader. There are several ways to enter DFU mode:
 
 **Empty Microcontroller:** An empty microcontroller boots directly into the DFU bootloader.
 
@@ -67,7 +67,7 @@ Once in DFU mode, follow the instructions from my generic [Hardware Build Manual
 
 ## Linux udev Rules
 
-Linux users may have issues connecting to the macro pad via a normal user.
+Linux users may have issues connecting to the macro pad as a normal user.
 
 The file `share/udev/60-octokeyz.rules` grants device access to users in the `plugdev` group and to logged-in users via the `uaccess` tag:
 
@@ -130,14 +130,16 @@ The firmware runs on HSI48 at 48 MHz (internal oscillator, no external crystal).
 
 ### Endpoints
 
-| Endpoint | Direction | Type | Max Packet Size | Interval |
-|----------|-----------|------|-----------------|----------|
-| EP1 | IN | Interrupt | 64 bytes | 10 ms |
-| EP1 | OUT | Interrupt | 64 bytes | 10 ms |
+The firmware only defines endpoint 1 in both directions:
+
+| Direction | Type | Max Packet Size | Interval |
+|-----------|------|-----------------|----------|
+| IN | Interrupt | 64 bytes | 10 ms |
+| OUT | Interrupt | 64 bytes | 10 ms |
 
 ### HID Reports
 
-| Report ID | Kind | Size (bytes) | Description |
+| ID | Kind | Size (bytes) | Description |
 |-----------|------|--------------|-------------|
 | 1 | Input | 1 | Button states -- bits 0-7 map to buttons 1-8, `1` = pressed |
 | 1 | Output | 1 | LED control -- bits 0-2 encode state: 1=on, 2=flash, 3=slow blink, 4=fast blink, 5=off |
@@ -150,9 +152,6 @@ Report sizes listed above do not include the report ID byte.
 
 ### Vendor Usage Pages
 
-> [!NOTE]
-> This is a custom vendor HID protocol, not a standard keyboard or consumer device. Interacting with it requires the [Go client library](40_client-libraries.md) or a custom implementation that understands the report structure and vendor usage pages described above.
-
 | Usage Page | Name | Contains |
 |------------|------|----------|
 | `0xFF00` | octokeyz | Application collection, capabilities feature |
@@ -160,6 +159,9 @@ Report sizes listed above do not include the report ID byte.
 | `0xFF02` | octokeyz LED | LED control (states 1-5) |
 | `0xFF03` | octokeyz Display | Display capabilities, line data, clear command |
 
+> [!NOTE]
+> This is a custom vendor HID protocol, not a standard keyboard or consumer device. Interacting with it requires the [Go client library](40_client-libraries.md) or a custom implementation that understands the report structure and vendor usage pages described above.
+
 ### HID Idle Rate
 
-The default idle rate is 500 ms (value 125 in 4 ms units), configurable via standard HID SET_IDLE and GET_IDLE requests. When idle rate is non-zero, button state reports are sent periodically even if no state change occurred. Setting idle rate to 0 disables periodic reports -- the device only sends a report when button state actually changes.
+The default idle rate is 500 ms (value 125 in 4 ms units), configurable via standard HID SET_IDLE and GET_IDLE requests. When idle rate is non-zero, button state reports are sent periodically even if no state change has occurred. Setting idle rate to 0 disables periodic reports -- the device only sends a report when button state actually changes.
