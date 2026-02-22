@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: rafaelmartins/website/hardware@main
+      - uses: rafaelmartins/website/kicad@main
         with:
           configuration: ./pcb/${{ matrix.pcb }}/config.yml
           source: ./pcb/${{ matrix.pcb }}
