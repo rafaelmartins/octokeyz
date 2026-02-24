@@ -23,7 +23,7 @@ This distribution contains the following files:
     README.txt                          => This file
     bin/                                => Firmware binaries for both variants
         octokeyz.elf                    => ELF binary as built by GCC
-        octokeys.elf.map                => Linker map file
+        octokeyz.elf.map                => Linker map file
         octokeyz.bin                    => Raw binary file
         octokeyz.dfu                    => DFU binary for dfu-util
         octokeyz.hex                    => Intel HEX file
