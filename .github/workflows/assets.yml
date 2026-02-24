@@ -39,7 +39,7 @@ jobs:
           source: ./pcb/${{ matrix.pcb }}
           destination: _build
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.pcb }}
           path: _build
@@ -51,13 +51,13 @@ jobs:
       - build
 
     steps:
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           path: build
 
       - uses: actions/configure-pages@v5
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: build
 
