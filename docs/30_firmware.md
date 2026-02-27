@@ -4,48 +4,65 @@ Single bare-metal C firmware for the STM32F042K6/K4 (ARM Cortex-M0). No HAL, no 
 
 The firmware implements a USB HID device with a custom vendor protocol. Host-side interaction is handled by the [Go client library](40_client-libraries.md) or any custom HID implementation that speaks the protocol described below.
 
-## Building from Source
+## Building from source
 
 ### Prerequisites
 
 - CMake 3.25 or later
-- Ninja build system (optional, but recommended)
+- Ninja (recommended) or Make
 - ARM GNU Toolchain (`arm-none-eabi`)
 - Git
 
-The two library dependencies -- [cmake-cmsis-stm32](https://github.com/rafaelmartins/cmake-cmsis-stm32) (build framework) and [usbd-fs-stm32](https://github.com/rafaelmartins/usbd-fs-stm32) (USB device stack) -- are fetched automatically via CMake FetchContent during configuration.
+The following dependencies are fetched automatically via CMake FetchContent:
 
-### Configure and Build
+- [cmake-cmsis-stm32](@@/p/cmake-cmsis-stm32/) -- CMake support for CMSIS-based STM32 projects
+- [usbd-fs-stm32](@@/p/usbd-fs-stm32/) -- USB full-speed device stack for STM32
+
+### Configure and build
 
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release -G Ninja
 cmake --build build
 ```
 
-### Output Artifacts
+### Output artifacts
 
 The build produces the following in the `build/firmware/` directory:
 
 | File | Description |
 |------|-------------|
 | `octokeyz.elf` | ELF binary |
+| `octokeyz.elf.map` | Linker map |
 | `octokeyz.bin` | Raw binary |
 | `octokeyz.hex` | Intel HEX |
 | `octokeyz.dfu` | DFU with suffix (for `dfu-util`) |
-| `octokeyz.map` | Linker map |
 
 The firmware version is derived from git tags matching the `v[0-9]*` pattern. Between tagged releases, the version includes the commit count and abbreviated hash (e.g. `0.0.72-1b14`).
 
-### Memory Layout
+### Memory layout
 
 The linker script (`firmware/STM32F042KxTx_FLASH.ld`) targets the smaller K4 memory to ensure compatibility with both STM32F042K4 and K6 variants:
 
-| Region | Start Address | Size |
+| Region | Start address | Size |
 |--------|---------------|------|
 | Flash | `0x08000000` | 16 KB |
 | RAM | `0x20000000` | 6 KB |
 
 ## Flashing
+
+### Using USB DFU
+
+Automated builds from the latest source are available from the [`rolling` release](https://github.com/rafaelmartins/octokeyz/releases/tag/rolling).
+
+Firmware flashing can be done over USB using the STM32's built-in DFU bootloader. There are several ways to enter DFU mode:
+
+**Empty microcontroller:** An empty microcontroller boots directly into the DFU bootloader, so it is ready to flash.
+
+**Button combo:** With an octokeyz firmware already running on the microcontroller, hold buttons 1 and 5 simultaneously while plugging in the USB cable. The microcontroller boots directly into the DFU bootloader.
+
+**Bootloader pin header:** Connect a jumper to JP1 (Boot to DFU) pin header and plug the USB cable. The microcontroller boots directly into the DFU bootloader.
+
+Once in DFU mode, follow the instructions from my generic [Hardware Build Manual's "STM32 (USB DFU)" section](@@/hardware/build-manual/#stm32-usb-dfu).
 
 ### Using ST-Link
 
@@ -55,19 +72,7 @@ With `st-flash` (from https://github.com/stlink-org/stlink) installed, run:
 cmake --build build --target octokeyz-stlink-write
 ```
 
-### Using USB DFU
-
-Firmware flashing can be done over USB using the STM32's built-in DFU bootloader. There are several ways to enter DFU mode:
-
-**Empty Microcontroller:** An empty microcontroller boots directly into the DFU bootloader.
-
-**Button Combo:** With an octokeyz firmware already running on the microcontroller, hold buttons 1 and 5 simultaneously while plugging in the USB cable. The microcontroller boots directly into the DFU bootloader.
-
-**Bootloader Pin Header:** Connect a jumper to JP1 (Boot to DFU) pin header and plug the USB cable. The microcontroller boots directly into the DFU bootloader.
-
-Once in DFU mode, follow the instructions from my generic [Hardware Build Manual's "STM32 (USB DFU)" section](@@/hardware/build-manual/#stm32-usb-dfu).
-
-## Linux udev Rules
+## Linux udev rules
 
 Linux users may have issues connecting to the macropad as a normal user.
 
@@ -84,11 +89,13 @@ sudo cp share/udev/60-octokeyz.rules /etc/udev/rules.d/
 sudo udevadm control --reload-rules && sudo udevadm trigger
 ```
 
-## Architecture Overview
+## Architecture overview
+
+### Clock configuration
 
 The firmware runs on HSI48 at 48 MHz (internal oscillator, no external crystal). Flash wait state is set to 1 cycle as required at this frequency. AHB and APB buses run undivided.
 
-### Peripheral Map
+### Peripheral map
 
 | Peripheral | Function |
 |------------|----------|
@@ -103,7 +110,11 @@ The firmware runs on HSI48 at 48 MHz (internal oscillator, no external crystal).
 | TIM17 | HID idle rate timer (one-pulse mode) |
 | RTC BKP0R | Bootloader magic value handling |
 
-### Source Files
+### Main loop
+
+The main loop is a polling loop that calls `usbd_task()` for USB processing and `display_task()` for display I2C DMA management. Button state is read in the USB IN endpoint callback by reading the GPIOA IDR register. A new input report is sent when the button state changes, or when the HID idle timer expires. Output reports (LED control, display data, display clear) are processed in the OUT endpoint callback.
+
+### Source files
 
 | File | Purpose |
 |------|---------|
@@ -114,9 +125,9 @@ The firmware runs on HSI48 at 48 MHz (internal oscillator, no external crystal).
 | `idle.c` | HID idle rate tracking via TIM17, SET_IDLE/GET_IDLE request handling |
 | `bootloader.c` | DFU entry detection (RTC backup register check), system memory remap and jump, reset trigger |
 
-## USB HID Protocol
+## USB HID protocol
 
-### Device Identity
+### Device identity
 
 | Field | Value |
 |-------|-------|
@@ -134,12 +145,12 @@ The firmware runs on HSI48 at 48 MHz (internal oscillator, no external crystal).
 
 The firmware only defines endpoint 1 in both directions:
 
-| Direction | Type | Max Packet Size | Interval |
+| Direction | Type | Max packet size | Interval |
 |-----------|------|-----------------|----------|
 | IN | Interrupt | 64 bytes | 10 ms |
 | OUT | Interrupt | 64 bytes | 10 ms |
 
-### HID Reports
+### HID reports
 
 | ID | Kind | Size (bytes) | Description |
 |-----------|------|--------------|-------------|
@@ -152,9 +163,9 @@ The firmware only defines endpoint 1 in both directions:
 
 Report sizes listed above do not include the report ID byte.
 
-### Vendor Usage Pages
+### Vendor usage pages
 
-| Usage Page | Name | Contains |
+| Usage page | Name | Contains |
 |------------|------|----------|
 | `0xFF00` | octokeyz | Application collection, capabilities feature |
 | `0xFF01` | octokeyz Key | Button states (keys 1-8) |
@@ -164,6 +175,6 @@ Report sizes listed above do not include the report ID byte.
 > [!NOTE]
 > This is a custom vendor HID protocol, not a standard keyboard or consumer device. Interacting with it requires the [Go client library](40_client-libraries.md) or a custom implementation that understands the report structure and vendor usage pages described above.
 
-### HID Idle Rate
+### HID idle rate
 
 The default idle rate is 500 ms (value 125 in 4 ms units), configurable via standard HID SET_IDLE and GET_IDLE requests. When idle rate is non-zero, button state reports are sent periodically even if no state change has occurred. Setting idle rate to 0 disables periodic reports -- the device only sends a report when button state actually changes.

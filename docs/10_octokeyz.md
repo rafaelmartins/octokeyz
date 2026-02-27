@@ -1,7 +1,7 @@
 ---
 menu: "HW: octokeyz"
 ---
-# Hardware Variant: octokeyz
+# Hardware variant: octokeyz
 
 The basic variant of the octokeyz macropad, featuring eight 12mm SPST push-buttons and a single indicator LED. It shares a single firmware binary with the [octokeyz-mega](20_octokeyz-mega.md) variant.
 
@@ -53,11 +53,11 @@ OpenSCAD source files are in the repository under `3d-models/octokeyz/`, with sh
 
 This variant does not include a display. The firmware detects display absence at runtime and operates normally without one. For the display-equipped variant, see [octokeyz-mega](20_octokeyz-mega.md).
 
-## Build Manual
+## Build manual
 
 The board uses predominantly through-hole components, with SMD parts limited to the microcontroller and the USB ESD protector. The LED holder is a 3D-printed part that holds the LED, so that it clips into the front enclosure opening.
 
 For the full assembly procedure, see my generic [Hardware Build Manual](@@/hardware/build-manual/).
 
 - For firmware flashing instructions, see [Firmware](30_firmware.md).
-- For writing programs to interact with the device, see [Client Libraries](40_client-libraries.md).
+- For writing programs to interact with the device, see [Client libraries](40_client-libraries.md).

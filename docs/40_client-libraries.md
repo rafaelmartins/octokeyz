@@ -1,4 +1,4 @@
-# Client Libraries
+# Client libraries
 
 The octokeyz firmware communicates over a custom USB HID protocol using vendor-specific usage pages (`0xFF00`-`0xFF03`). Interacting with the device from userspace requires a client library that understands this protocol. Currently, a Go library is available.
 
@@ -14,11 +14,11 @@ The Go client library provides device discovery, button event handling, LED cont
 
 ### Installation
 
-```
+```bash
 go get rafaelmartins.com/p/octokeyz
 ```
 
-### Device Lifecycle
+### Device lifecycle
 
 `Enumerate()` returns a list of all connected octokeyz devices. `GetDevice()` returns a specific device by serial number, or auto-detects if exactly one device is connected when called with an empty string.
 
@@ -52,7 +52,7 @@ for _, d := range devices {
 dev, err := octokeyz.GetDevice("200014000A43304D45363820")
 ```
 
-### Handling Button Events
+### Handling button events
 
 Register callbacks for individual buttons with `AddHandler()`, then call `Listen()` to start the blocking event loop.
 
@@ -76,7 +76,7 @@ Button constants are `BUTTON_1` through `BUTTON_8`.
 
 `Listen()` blocks indefinitely, dispatching events to registered handlers. If a handler returns an error, it is wrapped in a `ButtonHandlerError` and sent to the `errCh` channel without stopping the event loop. Pass `nil` for `errCh` to have errors sent to the standard logger.
 
-### Modifier Buttons
+### Modifier buttons
 
 The `Modifier` type implements shift/modifier-like functionality. Register its `Handler` method on a button, then check `Pressed()` from other handlers to branch on modifier state.
 
@@ -96,7 +96,7 @@ dev.AddHandler(octokeyz.BUTTON_1, func(b *octokeyz.Button) error {
 })
 ```
 
-### LED Control
+### LED control
 
 `Led()` sets the indicator LED state. Five states are available:
 
@@ -117,7 +117,7 @@ for i := 0; i < 3; i++ {
 }
 ```
 
-### Display Control
+### Display control
 
 Display functions are only operational on [octokeyz-mega](20_octokeyz-mega.md). On the basic variant, the firmware reports no display capability by returning an `ErrDeviceDisplayNotSupported` error whenever a function that requires a display is called.
 
@@ -140,7 +140,7 @@ dev.DisplayLine(octokeyz.DisplayLine1, "done!", octokeyz.DisplayLineAlignCenter)
 dev.DisplayClearWithDelay(2 * time.Second)
 ```
 
-### Complete Example
+### Complete example
 
 ```go
 package main
@@ -182,7 +182,7 @@ func main() {
 }
 ```
 
-### API Reference
+### API reference
 
 For the full API surface, type details, and additional examples, see the [package documentation on pkg.go.dev](https://pkg.go.dev/rafaelmartins.com/p/octokeyz).
 

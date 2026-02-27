@@ -1,7 +1,7 @@
 ---
 menu: "HW: octokeyz-mega"
 ---
-# Hardware Variant: octokeyz-mega
+# Hardware variant: octokeyz-mega
 
 The advanced variant of the octokeyz macropad, featuring eight Cherry MX-compatible mechanical keyboard switches and an SSD1306 OLED display for host-driven text output. It shares a single firmware binary with the [octokeyz](10_octokeyz.md) variant.
 
@@ -61,9 +61,9 @@ The firmware probes the I2C bus for the display at startup, retrying up to 10 ti
 
 On USB reset, the display shows a splash screen with "octokeyz" and the firmware version. Once USB enumeration completes, it briefly shows "Connected!" then clears after 1.5 seconds, leaving the display ready for host-driven content.
 
-Host software controls display content via USB HID output reports -- see [Firmware](30_firmware.md) for protocol details. The display is driven from userspace through the Go client library -- see [Client Libraries](40_client-libraries.md).
+Host software controls display content via USB HID output reports -- see [Firmware](30_firmware.md) for protocol details. The display is driven from userspace through the Go client library -- see [Client libraries](40_client-libraries.md).
 
-## Build Manual
+## Build manual
 
 The board has SMD components (microcontroller and USB ESD protector) that should be soldered first. The OLED display module connects via a pin header -- solder the header to the PCB, then seat the display module. Mechanical switches are soldered directly to the PCB from the top side.
 
@@ -72,4 +72,4 @@ The enclosure base/stand should be printed upside down for best surface finish o
 For the full assembly procedure, see my generic [Hardware Build Manual](@@/hardware/build-manual/).
 
 - For firmware flashing instructions, see [Firmware](30_firmware.md).
-- For writing programs to interact with the device, see [Client Libraries](40_client-libraries.md).
+- For writing programs to interact with the device, see [Client libraries](40_client-libraries.md).
