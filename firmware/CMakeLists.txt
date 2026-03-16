@@ -42,7 +42,7 @@ target_compile_options(octokeyz PRIVATE
 )
 
 target_compile_definitions(octokeyz PRIVATE
-    PACKAGE_VERSION=\"${PACKAGE_VERSION}\"
+    PACKAGE_VERSION=\"${PACKAGE_VERSION_GIT}\"
 )
 
 set_property(TARGET octokeyz
